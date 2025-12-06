@@ -18,6 +18,8 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/IR/DebugInfo.h"
+#include "llvm/Passes/PassPlugin.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
@@ -101,7 +103,7 @@ private:
             for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                 if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
                     StringRef Value = Str->getString();
-                    if (Value.startswith(AttrName + "=")) {
+                    if (Value.starts_with((AttrName + "=").str())) {
                         return Value.substr(AttrName.size() + 1).str();
                     }
                 }
@@ -113,7 +115,7 @@ private:
             Attribute Attr = F.getFnAttribute("annotate");
             if (Attr.isStringAttribute()) {
                 StringRef Value = Attr.getValueAsString();
-                if (Value.startswith(AttrName + "=")) {
+                if (Value.starts_with((AttrName + "=").str())) {
                     return Value.substr(AttrName.size() + 1).str();
                 }
             }
@@ -127,7 +129,7 @@ private:
                         for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                             if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
                                 StringRef Value = Str->getString();
-                                if (Value.startswith(AttrName + "=")) {
+                                if (Value.starts_with((AttrName + "=").str())) {
                                     return Value.substr(AttrName.size() + 1).str();
                                 }
                             }
@@ -388,7 +390,7 @@ public:
         }
 
         M = &Mod;
-        MissionProfileName = MissionProfile.empty() ? "default" : MissionProfile;
+        MissionProfileName = MissionProfile.getValue().empty() ? std::string("default") : MissionProfile.getValue();
 
         // Initialize module metadata
         ModuleMD.module_id = Mod.getName().str();

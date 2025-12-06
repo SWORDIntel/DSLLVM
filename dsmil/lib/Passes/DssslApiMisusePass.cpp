@@ -12,6 +12,8 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include <map>
@@ -52,8 +54,8 @@ private:
     Function* getApiMisuseFunction() {
         FunctionType *FTy = FunctionType::get(
             Type::getVoidTy(M->getContext()),
-            {PointerType::getInt8PtrTy(M->getContext()),  // api
-             PointerType::getInt8PtrTy(M->getContext()),  // reason
+            {PointerType::get(Type::getInt8Ty(M->getContext()), 0),  // api
+             PointerType::get(Type::getInt8Ty(M->getContext()), 0),  // reason
              Type::getInt64Ty(M->getContext())},          // context_id
             false);
 

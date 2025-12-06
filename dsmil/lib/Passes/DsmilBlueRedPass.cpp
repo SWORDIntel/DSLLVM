@@ -125,8 +125,7 @@ private:
       return ROLE_RED;
 
     // Check module-level attribute
-    if (M.getModuleFlag("dsmil.build_role")) {
-      auto *MD = cast<MDString>(M.getModuleFlag("dsmil.build_role"));
+    if (auto *MD = dyn_cast_or_null<MDString>(M.getModuleFlag("dsmil.build_role"))) {
       if (MD->getString() == "red")
         return ROLE_RED;
     }

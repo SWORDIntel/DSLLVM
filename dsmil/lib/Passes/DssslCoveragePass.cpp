@@ -13,6 +13,8 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
@@ -54,7 +56,7 @@ private:
         if (MDNode *MD = F.getMetadata("llvm.ptr.annotation")) {
             for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                 if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
-                    if (Str->getString().startswith(AttrName)) {
+                    if (Str->getString().starts_with(AttrName)) {
                         return true;
                     }
                 }
@@ -65,7 +67,7 @@ private:
             Attribute Attr = F.getFnAttribute("annotate");
             if (Attr.isStringAttribute()) {
                 StringRef Value = Attr.getValueAsString();
-                return Value.startswith(AttrName);
+                return Value.starts_with(AttrName);
             }
         }
         
@@ -80,7 +82,7 @@ private:
             for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                 if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
                     StringRef Value = Str->getString();
-                    if (Value.startswith(AttrName + "=")) {
+                    if (Value.starts_with((AttrName + "=").str())) {
                         return Value.substr(AttrName.size() + 1).str();
                     }
                 }
@@ -91,7 +93,7 @@ private:
             Attribute Attr = F.getFnAttribute("annotate");
             if (Attr.isStringAttribute()) {
                 StringRef Value = Attr.getValueAsString();
-                if (Value.startswith(AttrName + "=")) {
+                if (Value.starts_with((AttrName + "=").str())) {
                     return Value.substr(AttrName.size() + 1).str();
                 }
             }

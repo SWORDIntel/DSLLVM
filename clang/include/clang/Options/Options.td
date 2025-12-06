@@ -3034,7 +3034,7 @@ def fdsmil_telemetry_level_EQ : Joined<["-"], "fdsmil-telemetry-level=">,
   Visibility<[ClangOption, CC1Option]>,
   HelpText<"Set DSMIL telemetry instrumentation level: off, min, normal, debug, trace">,
   Values<"off,min,normal,debug,trace">,
-  MarshallingInfoString<CodeGenOpts<"DSMILTelemetryLevel">, "normal">;
+  MarshallingInfoString<CodeGenOpts<"DSMILTelemetryLevel">, "\"normal\"">;
 def fcf_protection_EQ : Joined<["-"], "fcf-protection=">,
   Visibility<[ClangOption, CLOption, CC1Option]>, Group<f_Group>,
   HelpText<"Instrument control-flow architecture protection">, Values<"return,branch,full,none">;

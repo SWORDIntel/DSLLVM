@@ -22,6 +22,8 @@
 #include "llvm/IR/DebugInfo.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/Intrinsics.h"
+#include "llvm/Passes/PassPlugin.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
@@ -90,7 +92,7 @@ struct FunctionMetadata {
     uint8_t layer = 0;
     uint8_t device = 0;
     std::string stage;
-    std::string file;
+    std::string source_file;
     uint32_t line = 0;
     std::string category;  // Derived from annotation
     std::string op;        // Operation name (heuristic or annotation)
@@ -141,7 +143,7 @@ private:
         if (MDNode *MD = F.getMetadata("llvm.ptr.annotation")) {
             for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                 if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
-                    if (Str->getString().startswith(AttrName)) {
+                    if (Str->getString().starts_with(AttrName)) {
                         return true;
                     }
                 }
@@ -153,7 +155,7 @@ private:
             Attribute Attr = F.getFnAttribute("annotate");
             if (Attr.isStringAttribute()) {
                 StringRef Value = Attr.getValueAsString();
-                return Value.startswith(AttrName);
+                return Value.starts_with(AttrName);
             }
         }
         
@@ -164,7 +166,7 @@ private:
                     if (MDNode *MD = I.getMetadata("llvm.ptr.annotation")) {
                         for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                             if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
-                                if (Str->getString().startswith(AttrName)) {
+                                if (Str->getString().starts_with(AttrName)) {
                                     return true;
                                 }
                             }
@@ -188,7 +190,7 @@ private:
             for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                 if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
                     StringRef Value = Str->getString();
-                    if (Value.startswith(AttrName + "=")) {
+                    if (Value.starts_with((AttrName + "=").str())) {
                         return Value.substr(AttrName.size() + 1).str();
                     }
                 }
@@ -200,7 +202,7 @@ private:
             Attribute Attr = F.getFnAttribute("annotate");
             if (Attr.isStringAttribute()) {
                 StringRef Value = Attr.getValueAsString();
-                if (Value.startswith(AttrName + "=")) {
+                if (Value.starts_with((AttrName + "=").str())) {
                     return Value.substr(AttrName.size() + 1).str();
                 }
             }
@@ -285,15 +287,15 @@ private:
      */
     TelemetryLevel getTelemetryLevel(Module &Mod) {
         // Check module flag first
-        if (MDNode *MD = Mod.getModuleFlag("dsmil.telemetry.level")) {
+        if (auto *MD = dyn_cast_or_null<MDNode>(Mod.getModuleFlag("dsmil.telemetry.level"))) {
             if (MDString *Str = dyn_cast<MDString>(MD->getOperand(0))) {
                 return parseTelemetryLevel(Str->getString().str());
             }
         }
         
         // Fall back to command-line option
-        if (!TelemetryLevel.empty()) {
-            return parseTelemetryLevel(TelemetryLevel);
+        if (!TelemetryLevel.getValue().empty()) {
+            return parseTelemetryLevel(TelemetryLevel.getValue());
         }
         
         return LEVEL_NORMAL;  // Default
@@ -428,7 +430,7 @@ private:
         MD.layer = extractLayer(F);
         MD.device = extractDevice(F);
         MD.stage = extractStage(F);
-        getDebugLocation(F, MD.file, MD.line);
+        getDebugLocation(F, MD.source_file, MD.line);
 
         // Add to map if has any annotation
         if (MD.ot_critical || MD.ses_gate || MD.net_io || MD.crypto ||
@@ -448,7 +450,7 @@ private:
                 for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                     if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
                         StringRef Value = Str->getString();
-                        if (Value.startswith("dsmil.safety_signal=")) {
+                        if (Value.starts_with("dsmil.safety_signal=")) {
                             SafetySignalMetadata SS;
                             SS.name = Value.substr(strlen("dsmil.safety_signal=")).str();
                             SS.global = &GV;
@@ -481,7 +483,7 @@ private:
                 Attribute Attr = GV.getAttribute("annotate");
                 if (Attr.isStringAttribute()) {
                     StringRef Value = Attr.getValueAsString();
-                    if (Value.startswith("dsmil.safety_signal=")) {
+                    if (Value.starts_with("dsmil.safety_signal=")) {
                         SafetySignalMetadata SS;
                         SS.name = Value.substr(strlen("dsmil.safety_signal=")).str();
                         SS.global = &GV;
@@ -513,7 +515,7 @@ private:
     Function* getTelemetryEventFunction() {
         FunctionType *FTy = FunctionType::get(
             Type::getVoidTy(M->getContext()),
-            {PointerType::getInt8PtrTy(M->getContext())},  // dsmil_telemetry_event_t*
+            {PointerType::getUnqual(M->getContext())},  // dsmil_telemetry_event_t*
             false);
 
         Function *F = M->getFunction("dsmil_telemetry_event");
@@ -530,7 +532,7 @@ private:
     Function* getSafetySignalUpdateFunction() {
         FunctionType *FTy = FunctionType::get(
             Type::getVoidTy(M->getContext()),
-            {PointerType::getInt8PtrTy(M->getContext())},  // dsmil_telemetry_event_t*
+            {PointerType::getUnqual(M->getContext())},  // dsmil_telemetry_event_t*
             false);
 
         Function *F = M->getFunction("dsmil_telemetry_safety_signal_update");
@@ -605,7 +607,7 @@ private:
         // Create string constants
         Constant *ModuleIDStr = ConstantDataArray::getString(Ctx, ModuleID, true);
         Constant *FuncIDStr = ConstantDataArray::getString(Ctx, MD.name, true);
-        Constant *FileStr = ConstantDataArray::getString(Ctx, MD.file, true);
+        Constant *FileStr = ConstantDataArray::getString(Ctx, StringRef(MD.source_file), true);
         Constant *StageStr = ConstantDataArray::getString(Ctx, MD.stage.empty() ? "" : MD.stage, true);
         Constant *ProfileStr = ConstantDataArray::getString(Ctx, MissionProfileName, true);
         Constant *CategoryStr = ConstantDataArray::getString(Ctx, MD.category.empty() ? "" : MD.category, true);
@@ -635,55 +637,53 @@ private:
             OpStr, "telemetry_op");
 
         // Get pointers to string data
-        Value *ModuleIDPtr = Builder.CreateConstGEP2_32(
+        Value *ModuleIDPtr = Builder.CreateConstInBoundsGEP2_64(
             ModuleIDStr->getType(), ModuleIDGV, 0, 0);
-        Value *FuncIDPtr = Builder.CreateConstGEP2_32(
+        Value *FuncIDPtr = Builder.CreateConstInBoundsGEP2_64(
             FuncIDStr->getType(), FuncIDGV, 0, 0);
-        Value *FilePtr = Builder.CreateConstGEP2_32(
+        Value *FilePtr = Builder.CreateConstInBoundsGEP2_64(
             FileStr->getType(), FileGV, 0, 0);
-        Value *StagePtr = Builder.CreateConstGEP2_32(
+        Value *StagePtr = Builder.CreateConstInBoundsGEP2_64(
             StageStr->getType(), StageGV, 0, 0);
-        Value *ProfilePtr = Builder.CreateConstGEP2_32(
+        Value *ProfilePtr = Builder.CreateConstInBoundsGEP2_64(
             ProfileStr->getType(), ProfileGV, 0, 0);
-        Value *CategoryPtr = Builder.CreateConstGEP2_32(
+        Value *CategoryPtr = Builder.CreateConstInBoundsGEP2_64(
             CategoryStr->getType(), CategoryGV, 0, 0);
-        Value *OpPtr = Builder.CreateConstGEP2_32(
+        Value *OpPtr = Builder.CreateConstInBoundsGEP2_64(
             OpStr->getType(), OpGV, 0, 0);
 
         // Create event struct type (simplified - using opaque pointer)
         // In a full implementation, we'd create the exact struct type
-        // For now, pass a pointer that the runtime can interpret
-        // The runtime will use debug info to fill in missing fields
+        // For now, pass a pointer to a struct containing the essential fields
         
         // Create a minimal event structure on the stack
         // We'll pass a pointer to a struct containing the essential fields
-        StructType *EventTy = StructType::create(Ctx, "dsmil_telemetry_event");
         std::vector<Type*> Fields = {
             Type::getInt32Ty(Ctx),           // event_type
-            PointerType::getInt8PtrTy(Ctx),  // module_id
-            PointerType::getInt8PtrTy(Ctx),  // func_id
-            PointerType::getInt8PtrTy(Ctx),  // file
+            PointerType::getUnqual(Ctx),  // module_id
+            PointerType::getUnqual(Ctx),  // func_id
+            PointerType::getUnqual(Ctx),  // file
             Type::getInt32Ty(Ctx),           // line
             Type::getInt8Ty(Ctx),            // layer
             Type::getInt8Ty(Ctx),            // device
-            PointerType::getInt8PtrTy(Ctx),  // stage
-            PointerType::getInt8PtrTy(Ctx),  // mission_profile
+            PointerType::getUnqual(Ctx),  // stage
+            PointerType::getUnqual(Ctx),  // mission_profile
             Type::getInt8Ty(Ctx),            // authority_tier
             Type::getInt64Ty(Ctx),           // build_id
             Type::getInt64Ty(Ctx),           // provenance_id
-            PointerType::getInt8PtrTy(Ctx),  // signal_name
+            PointerType::getUnqual(Ctx),  // signal_name
             Type::getDoubleTy(Ctx),         // signal_value
             Type::getDoubleTy(Ctx),         // signal_min
             Type::getDoubleTy(Ctx),         // signal_max
             // ... telecom fields ...
-            PointerType::getInt8PtrTy(Ctx),  // category
-            PointerType::getInt8PtrTy(Ctx),  // op
+            PointerType::getUnqual(Ctx),  // category
+            PointerType::getUnqual(Ctx),  // op
             Type::getInt32Ty(Ctx),           // status_code
-            PointerType::getInt8PtrTy(Ctx),  // resource
-            PointerType::getInt8PtrTy(Ctx),  // error_msg
+            PointerType::getUnqual(Ctx),  // resource
+            PointerType::getUnqual(Ctx),  // error_msg
             Type::getInt64Ty(Ctx)           // elapsed_ns
         };
-        EventTy->setBody(Fields);
+        StructType *EventTy = StructType::create(Ctx, Fields, "dsmil_telemetry_event");
 
         // Allocate event structure
         AllocaInst *EventAlloca = Builder.CreateAlloca(EventTy, nullptr, "telemetry_event");
@@ -697,7 +697,7 @@ private:
         Value *LayerVal = ConstantInt::get(Type::getInt8Ty(Ctx), MD.layer);
         Value *DeviceVal = ConstantInt::get(Type::getInt8Ty(Ctx), MD.device);
         Value *TierVal = ConstantInt::get(Type::getInt8Ty(Ctx), MD.authority_tier);
-        Value *NullPtr = ConstantPointerNull::get(PointerType::getInt8PtrTy(Ctx));
+        Value *NullPtr = ConstantPointerNull::get(PointerType::getUnqual(Ctx));
         Value *ZeroDouble = ConstantFP::get(Type::getDoubleTy(Ctx), 0.0);
 
         // Store fields
@@ -727,7 +727,7 @@ private:
         Builder.CreateStore(ElapsedVal, Builder.CreateStructGEP(EventTy, EventAlloca, 21));  // elapsed_ns
 
         // Cast to void* for function call
-        Value *EventPtr = Builder.CreateBitCast(EventAlloca, PointerType::getInt8PtrTy(Ctx));
+        Value *EventPtr = Builder.CreateBitCast(EventAlloca, PointerType::getUnqual(Ctx));
         Builder.CreateCall(TelemetryFn, {EventPtr});
     }
 
@@ -830,7 +830,7 @@ private:
 
                             // Create telemetry call for safety signal update
                             Function *SignalFn = getSafetySignalUpdateFunction();
-                            Value *NullPtr = ConstantPointerNull::get(PointerType::getInt8PtrTy(M->getContext()));
+                            Value *NullPtr = ConstantPointerNull::get(PointerType::getUnqual(M->getContext()));
                             Builder.CreateCall(SignalFn, {NullPtr});
                         }
                     }
@@ -917,7 +917,7 @@ public:
         }
 
         M = &Mod;
-        MissionProfileName = MissionProfile.empty() ? "default" : MissionProfile;
+        MissionProfileName = MissionProfile.getValue().empty() ? "default" : MissionProfile.getValue();
         CurrentLevel = getTelemetryLevel(Mod);
 
         // Set module flag for telemetry level

@@ -14,6 +14,8 @@
 #include "llvm/IR/PassManager.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/Analysis/LoopInfo.h"
+#include "llvm/Passes/PassPlugin.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include <map>
@@ -51,7 +53,7 @@ private:
             for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                 if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
                     StringRef Value = Str->getString();
-                    if (Value.startswith(AttrName + "=")) {
+                    if (Value.starts_with((AttrName + "=").str())) {
                         return Value.substr(AttrName.size() + 1).str();
                     }
                 }
@@ -62,7 +64,7 @@ private:
             Attribute Attr = F.getFnAttribute("annotate");
             if (Attr.isStringAttribute()) {
                 StringRef Value = Attr.getValueAsString();
-                if (Value.startswith(AttrName + "=")) {
+                if (Value.starts_with((AttrName + "=").str())) {
                     return Value.substr(AttrName.size() + 1).str();
                 }
             }
@@ -77,7 +79,7 @@ private:
     Function* getCryptoBeginFunction() {
         FunctionType *FTy = FunctionType::get(
             Type::getVoidTy(M->getContext()),
-            {PointerType::getInt8PtrTy(M->getContext())},  // op_name
+            {PointerType::get(Type::getInt8Ty(M->getContext()), 0)},  // op_name
             false);
 
         Function *F = M->getFunction("dsssl_crypto_metric_begin");
@@ -95,7 +97,7 @@ private:
     Function* getCryptoEndFunction() {
         FunctionType *FTy = FunctionType::get(
             Type::getVoidTy(M->getContext()),
-            {PointerType::getInt8PtrTy(M->getContext())},  // op_name
+            {PointerType::get(Type::getInt8Ty(M->getContext()), 0)},  // op_name
             false);
 
         Function *F = M->getFunction("dsssl_crypto_metric_end");
@@ -153,7 +155,7 @@ private:
         // Instrument function entry
         BasicBlock &EntryBB = F.getEntryBlock();
         IRBuilder<> EntryBuilder(&EntryBB, EntryBB.begin());
-        Value *OpNamePtr = EntryBuilder.CreateConstGEP2_32(
+        Value *OpNamePtr = EntryBuilder.CreateConstGEP2_64(
             OpNameStr->getType(), OpNameGV, 0, 0);
         EntryBuilder.CreateCall(BeginFn, {OpNamePtr});
 

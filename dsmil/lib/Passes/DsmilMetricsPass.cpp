@@ -20,6 +20,8 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/IR/Metadata.h"
+#include "llvm/Passes/PassPlugin.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
@@ -99,7 +101,7 @@ bool hasAnnotation(Function &F, StringRef AttrName) {
     if (MDNode *MD = F.getMetadata("llvm.ptr.annotation")) {
         for (unsigned i = 0; i < MD->getNumOperands(); i++) {
             if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
-                if (Str->getString().startswith(AttrName)) {
+                if (Str->getString().starts_with(AttrName)) {
                     return true;
                 }
             }
@@ -111,7 +113,7 @@ bool hasAnnotation(Function &F, StringRef AttrName) {
         Attribute Attr = F.getFnAttribute("annotate");
         if (Attr.isStringAttribute()) {
             StringRef Value = Attr.getValueAsString();
-            return Value.startswith(AttrName);
+            return Value.starts_with(AttrName);
         }
     }
     
@@ -122,7 +124,7 @@ bool hasAnnotation(Function &F, StringRef AttrName) {
                 if (MDNode *MD = I.getMetadata("llvm.ptr.annotation")) {
                     for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                         if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
-                            if (Str->getString().startswith(AttrName)) {
+                            if (Str->getString().starts_with(AttrName)) {
                                 return true;
                             }
                         }
@@ -146,7 +148,7 @@ std::string extractAnnotationParam(Function &F, StringRef AttrName) {
         for (unsigned i = 0; i < MD->getNumOperands(); i++) {
             if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
                 StringRef Value = Str->getString();
-                if (Value.startswith(AttrName + "=")) {
+                if (Value.starts_with((AttrName + "=").str())) {
                     return Value.substr(AttrName.size() + 1).str();
                 }
             }
@@ -158,7 +160,7 @@ std::string extractAnnotationParam(Function &F, StringRef AttrName) {
         Attribute Attr = F.getFnAttribute("annotate");
         if (Attr.isStringAttribute()) {
             StringRef Value = Attr.getValueAsString();
-            if (Value.startswith(AttrName + "=")) {
+            if (Value.starts_with((AttrName + "=").str())) {
                 return Value.substr(AttrName.size() + 1).str();
             }
         }
@@ -318,7 +320,7 @@ TelemetryMetrics collectMetrics(Module &Mod) {
             for (unsigned i = 0; i < MD->getNumOperands(); i++) {
                 if (MDString *Str = dyn_cast<MDString>(MD->getOperand(i))) {
                     StringRef Value = Str->getString();
-                    if (Value.startswith("dsmil.safety_signal=")) {
+                    if (Value.starts_with("dsmil.safety_signal=")) {
                         Metrics.safety_signal_count++;
                         break;
                     }
@@ -364,7 +366,7 @@ void generateMetricsJSON(Module &Mod, const TelemetryMetrics &Metrics,
     
     Out << "{\n";
     Out << "  \"module_id\": \"" << ModuleName << "\",\n";
-    Out << "  \"mission_profile\": \"" << (MissionProfile.empty() ? "default" : MissionProfile) << "\",\n";
+    Out << "  \"mission_profile\": \"" << (MissionProfile.getValue().empty() ? std::string("default") : MissionProfile.getValue()) << "\",\n";
     Out << "  \"metrics\": {\n";
     
     // Overall counts

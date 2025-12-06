@@ -4,15 +4,22 @@ set(DSMIL_PASS_SOURCES
   DsmilConstantTimePass.cpp
   DsmilCrossDomainPass.cpp
   DsmilEdgeSecurityPass.cpp
+  DsmilFuzzCoveragePass.cpp
   DsmilFuzzExportPass.cpp
   DsmilJADC2Pass.cpp
   DsmilMPEPass.cpp
+  DsmilMetricsPass.cpp
   DsmilMissionPolicyPass.cpp
   DsmilNuclearSuretyPass.cpp
   DsmilRadioBridgePass.cpp
   DsmilStealthPass.cpp
+  DsmilTelecomPass.cpp
   DsmilTelemetryCheckPass.cpp
+  DsmilTelemetryPass.cpp
   DsmilThreatSignaturePass.cpp
+  DssslApiMisusePass.cpp
+  DssslCoveragePass.cpp
+  DssslCryptoMetricsPass.cpp
 )
 
 add_llvm_library(DsmilPasses MODULE
