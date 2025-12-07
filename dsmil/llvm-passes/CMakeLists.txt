@@ -78,6 +78,8 @@ add_library(DSLLVMPasses MODULE
   DsmilAIAccelerate.cpp
   DsmilSpecHardening.cpp
   DsmilConstantTimeCheck.cpp
+  DsmilVNNIPatternMatcher.cpp
+  DsmilVNNILowering.cpp
 )
 
 target_link_libraries(DSLLVMPasses
