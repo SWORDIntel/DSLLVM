@@ -1,0 +1,201 @@
+#!/usr/bin/env python3
+"""
+DSLLVM CPU Feature Probe
+Extracts CPU features from the system and generates DSLLVM CPU profile JSON.
+"""
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+
+def get_cpu_flags():
+    """Read CPU flags from /proc/cpuinfo"""
+    try:
+        with open('/proc/cpuinfo', 'r') as f:
+            for line in f:
+                if line.startswith('flags'):
+                    # Extract flags after the colon
+                    flags = line.split(':', 1)[1].strip().split()
+                    return flags
+    except FileNotFoundError:
+        print("ERROR: /proc/cpuinfo not found. This tool requires Linux.", file=sys.stderr)
+        sys.exit(1)
+    return []
+
+
+def get_cpu_info():
+    """Extract CPU vendor, family, model, stepping"""
+    vendor = None
+    family = None
+    model = None
+    stepping = None
+    
+    try:
+        with open('/proc/cpuinfo', 'r') as f:
+            for line in f:
+                if line.startswith('vendor_id'):
+                    vendor = line.split(':', 1)[1].strip()
+                elif line.startswith('cpu family'):
+                    family = int(line.split(':', 1)[1].strip())
+                elif line.startswith('model') and not line.startswith('model name'):
+                    model = int(line.split(':', 1)[1].strip())
+                elif line.startswith('stepping'):
+                    stepping = int(line.split(':', 1)[1].strip())
+                    break
+    except FileNotFoundError:
+        pass
+    
+    return vendor, family, model, stepping
+
+
+def categorize_features(flags):
+    """Categorize CPU features into functional groups"""
+    categories = {
+        'ai_acceleration': [],
+        'security': [],
+        'profiling': [],
+        'virtualization': [],
+        'memory': [],
+        'misc': []
+    }
+    
+    # AI/Vector/Performance features
+    ai_features = ['avx_vnni', 'fsrm', 'erms', 'bmi1', 'bmi2', 'abm', 'rep_good', 
+                   'avx', 'avx2', 'fma', 'sse4_1', 'sse4_2', 'popcnt']
+    
+    # Security features
+    security_features = ['smep', 'smap', 'umip', 'user_shstk', 'tme', 'smx', 
+                         'md_clear', 'flush_l1d', 'ssbd', 'ibrs_enhanced', 
+                         'stibp', 'ibpb', 'nx', 'pku']
+    
+    # Profiling/observability features
+    profiling_features = ['intel_pt', 'arch_lbr', 'pebs', 'bts', 'arch_perfmon', 
+                          'hfi', 'pdcm', 'ds_cpl', 'dtes64', 'monitor']
+    
+    # Virtualization features
+    virt_features = ['vmx', 'ept', 'ept_ad', 'vpid', 'x2apic', 'tpr_shadow', 
+                     'flexpriority', 'vnmi', 'rdtscp']
+    
+    # Memory features
+    memory_features = ['fsrm', 'erms', '3dnowprefetch', 'clflushopt', 'clwb', 
+                       'clflush', 'invpcid']
+    
+    # Misc features
+    misc_features = ['bus_lock_detect', 'split_lock_detect', 'nopl', 'constant_tsc',
+                     'nonstop_tsc', 'tsc_deadline_timer', 'rdrand', 'rdseed']
+    
+    for flag in flags:
+        if flag in ai_features:
+            categories['ai_acceleration'].append(flag)
+        if flag in security_features:
+            categories['security'].append(flag)
+        if flag in profiling_features:
+            categories['profiling'].append(flag)
+        if flag in virt_features:
+            categories['virtualization'].append(flag)
+        if flag in memory_features:
+            categories['memory'].append(flag)
+        if flag in misc_features:
+            categories['misc'].append(flag)
+    
+    # Remove duplicates and sort
+    for category in categories:
+        categories[category] = sorted(list(set(categories[category])))
+    
+    return categories
+
+
+def generate_llvm_target_features(flags):
+    """Generate LLVM target feature flags from CPU flags"""
+    llvm_features = []
+    
+    # Mapping from CPU flags to LLVM target features
+    flag_mapping = {
+        'avx': '+avx',
+        'avx2': '+avx2',
+        'avx_vnni': '+avx_vnni',
+        'aes': '+aes',
+        'vaes': '+vaes',
+        'sha': '+sha',
+        'gfni': '+gfni',
+        'bmi1': '+bmi',
+        'bmi2': '+bmi2',
+        'popcnt': '+popcnt',
+        'fma': '+fma',
+        'sse4_2': '+sse4.2',
+        'movdiri': '+movdiri',
+        'waitpkg': '+waitpkg',
+        'fsrm': '+fsrm',
+        'erms': '+erms',
+    }
+    
+    for cpu_flag, llvm_flag in flag_mapping.items():
+        if cpu_flag in flags:
+            llvm_features.append(llvm_flag)
+    
+    return llvm_features
+
+
+def main():
+    # Get CPU info
+    vendor, family, model, stepping = get_cpu_info()
+    
+    if vendor is None:
+        print("ERROR: Could not determine CPU vendor", file=sys.stderr)
+        sys.exit(1)
+    
+    # Format family_model_stepping
+    fms = f"{family:02x}_{model:02x}_{stepping:02x}" if all(x is not None for x in [family, model, stepping]) else "unknown"
+    
+    # Get CPU flags
+    flags = get_cpu_flags()
+    
+    if not flags:
+        print("ERROR: No CPU flags found in /proc/cpuinfo", file=sys.stderr)
+        sys.exit(1)
+    
+    # Categorize features
+    categories = categorize_features(flags)
+    
+    # Generate LLVM target features
+    llvm_features = generate_llvm_target_features(flags)
+    
+    # Determine profile name based on CPU
+    if 'GenuineIntel' in vendor and family == 6:
+        if model == 0xaa:  # Meteor Lake
+            profile_name = "mtr-mtl-dsmil"
+            description = "Intel Core Ultra (Meteor Lake) CPU feature profile for DSMIL"
+        else:
+            profile_name = f"intel-{fms}"
+            description = f"Intel CPU feature profile ({fms})"
+    else:
+        profile_name = f"{vendor.lower()}-{fms}"
+        description = f"CPU feature profile for {vendor}"
+    
+    # Build the JSON structure
+    profile = {
+        "schema": "dsllvm-cpu-profile-v1",
+        "profile_name": profile_name,
+        "description": description,
+        "arch": "x86_64",
+        "vendor": vendor,
+        "family_model_stepping": fms,
+        "target_triple": "x86_64-dsmil-meteorlake-elf" if "mtr-mtl" in profile_name else "x86_64-unknown-linux-gnu",
+        "llvm_target_features": llvm_features,
+        "features": categories,
+        "all_flags": sorted(flags),
+        "metadata": {
+            "generated_by": "dsllvm-cpufeatures v1.0",
+            "timestamp": subprocess.check_output(['date', '-Iseconds']).decode().strip()
+        }
+    }
+    
+    # Output JSON
+    print(json.dumps(profile, indent=2))
+
+
+if __name__ == '__main__':
+    main()

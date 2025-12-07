@@ -1,0 +1,159 @@
+{
+  "schema": "dsllvm-cpu-profile-v1",
+  "profile_name": "mtr-mtl-dsmil",
+  "description": "Intel Core Ultra 7 165H (Meteor Lake) CPU feature profile for DSMIL",
+  "arch": "x86_64",
+  "vendor": "GenuineIntel",
+  "family_model_stepping": "06_aa_02",
+  "target_triple": "x86_64-dsmil-meteorlake-elf",
+  
+  "llvm_target_features": [
+    "+avx2", "+avx_vnni", "+aes", "+vaes", "+sha", "+gfni",
+    "+bmi", "+bmi2", "+popcnt", "+fma", "+sse4.2",
+    "+movdiri", "+waitpkg", "+fsrm", "+erms"
+  ],
+  
+  "features": {
+    "ai_acceleration": [
+      "avx_vnni",
+      "fsrm",
+      "erms",
+      "bmi1",
+      "abm",
+      "rep_good"
+    ],
+    "security": [
+      "smep",
+      "smap",
+      "umip",
+      "user_shstk",
+      "tme",
+      "smx",
+      "md_clear",
+      "flush_l1d",
+      "ssbd",
+      "ibrs_enhanced",
+      "stibp",
+      "ibpb"
+    ],
+    "profiling": [
+      "intel_pt",
+      "arch_lbr",
+      "pebs",
+      "bts",
+      "arch_perfmon",
+      "hfi"
+    ],
+    "virtualization": [
+      "vmx",
+      "ept",
+      "ept_ad",
+      "vpid",
+      "x2apic",
+      "tpr_shadow",
+      "flexpriority",
+      "vnmi"
+    ],
+    "memory": [
+      "fsrm",
+      "erms",
+      "3dnowprefetch",
+      "clflushopt",
+      "clwb"
+    ],
+    "misc": [
+      "bus_lock_detect",
+      "split_lock_detect",
+      "nopl",
+      "pku"
+    ]
+  },
+  
+  "feature_descriptions": {
+    "nopl": "Alternate multi-byte NOP encoding, used for alignment and patchable code sequences",
+    "vme": "Virtual 8086 Mode Enhancements, assists running legacy 16-bit code under protected mode",
+    "avx_vnni": "AVX Vector Neural Network Instructions for INT8 AI acceleration",
+    "fsrm": "Fast Short REP MOVSB for optimized small memory copies",
+    "erms": "Enhanced REP MOVSB/STOSB for optimized memory operations",
+    "bmi1": "Bit Manipulation Instruction Set 1 (ANDN, BEXTR, BLSI, etc.)",
+    "abm": "Advanced Bit Manipulation (LZCNT, POPCNT)",
+    "intel_pt": "Intel Processor Trace for hardware-assisted execution tracing",
+    "arch_lbr": "Architectural Last Branch Records",
+    "pebs": "Precise Event Based Sampling",
+    "bts": "Branch Trace Store",
+    "arch_perfmon": "Architectural Performance Monitoring",
+    "hfi": "Hardware Feedback Interface for performance/power hints",
+    "smep": "Supervisor Mode Execution Prevention",
+    "smap": "Supervisor Mode Access Prevention",
+    "umip": "User Mode Instruction Prevention",
+    "user_shstk": "User-mode shadow stack (CET)",
+    "tme": "Total Memory Encryption",
+    "smx": "Safer Mode Extensions (TXT)",
+    "md_clear": "Microarchitectural Data Sampling mitigation",
+    "flush_l1d": "L1D cache flush capability",
+    "ssbd": "Speculative Store Bypass Disable",
+    "ibrs_enhanced": "Enhanced Indirect Branch Restricted Speculation",
+    "stibp": "Single Thread Indirect Branch Predictor",
+    "ibpb": "Indirect Branch Prediction Barrier",
+    "vmx": "Virtual Machine Extensions (VT-x)",
+    "ept": "Extended Page Tables",
+    "ept_ad": "EPT Accessed/Dirty bits",
+    "vpid": "Virtual Processor ID",
+    "bus_lock_detect": "Bus lock detection and notification",
+    "split_lock_detect": "Split lock detection and notification"
+  },
+  
+  "compiler_flags": {
+    "default": [
+      "-march=meteorlake",
+      "-mtune=meteorlake",
+      "-O3",
+      "-pipe",
+      "-fomit-frame-pointer",
+      "-funroll-loops",
+      "-fstrict-aliasing",
+      "-fno-plt",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-flto=auto"
+    ],
+    "ai_accelerate": [
+      "-fdsllvm-ai-accelerate",
+      "-mavx2",
+      "-mavx-vnni"
+    ],
+    "harden": [
+      "-fdsllvm-harden",
+      "-fcf-protection=full",
+      "-fstack-protector-strong",
+      "-D_FORTIFY_SOURCE=2"
+    ],
+    "spec_hard": [
+      "-fdsllvm-spec-hard",
+      "-mretpoline",
+      "-mindirect-branch=thunk-extern"
+    ],
+    "profiling_pt": [
+      "-fdsllvm-prof=pt",
+      "-gdwarf-5",
+      "-g"
+    ],
+    "profiling_lbr": [
+      "-fdsllvm-prof=lbr"
+    ]
+  },
+  
+  "assumptions": {
+    "tme_required": true,
+    "txt_expected": false,
+    "cet_available": true,
+    "speculation_mitigations_active": true
+  },
+  
+  "metadata": {
+    "created": "2025-12-07",
+    "version": "1.0",
+    "validated_on": "Intel Core Ultra 7 165H",
+    "notes": "Production profile for DSMIL Meteor Lake deployments"
+  }
+}

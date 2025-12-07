@@ -21,6 +21,13 @@ Welcome to the DSLLVM comprehensive documentation. This directory contains all d
 | [PIPELINES.md](PIPELINES.md) | Pass pipeline configurations | Compiler Engineers |
 | [PATH-CONFIGURATION.md](PATH-CONFIGURATION.md) | Dynamic path configuration and portable installations | DevOps, System Administrators |
 
+**Hardware Integration** - CPU feature detection and optimization
+
+| Document | Description | Audience |
+|----------|-------------|----------|
+| [DSLLVM_CPU_FEATURE_MODEL.md](DSLLVM_CPU_FEATURE_MODEL.md) | CPU feature integration specification for Meteor Lake | Compiler Engineers, Performance Engineers |
+| [CPU_FEATURES_REFERENCE.md](CPU_FEATURES_REFERENCE.md) | Complete CPU feature reference with corrected descriptions | Developers, Security Engineers |
+
 ---
 
 ## 🎯 Feature Guides (By Version)
