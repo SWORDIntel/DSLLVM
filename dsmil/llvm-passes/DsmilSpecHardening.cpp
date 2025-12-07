@@ -5,6 +5,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "DsmilSpecHardening.h"
+#include "DsmilIntrinsics.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/IRBuilder.h"
@@ -181,13 +182,7 @@ bool SpecHardeningPass::mitigateHazard(HazardSite &Site, const CPUFeatures &Feat
 
 void SpecHardeningPass::insertLFENCE(Instruction *I) {
   IRBuilder<> Builder(I->getNextNode());
-  
-  // Insert LFENCE intrinsic (x86_sse2_lfence)
-  Module *M = I->getModule();
-  Function *LFence = Intrinsic::getDeclaration(M, Intrinsic::x86_sse2_lfence);
-  Builder.CreateCall(LFence);
-  
-  // TODO: Actually insert the intrinsic (stub for now)
+  DsmilIntrinsics::insertLFENCE(Builder);
 }
 
 void SpecHardeningPass::insertMDClear(Instruction *I) {
@@ -195,11 +190,7 @@ void SpecHardeningPass::insertMDClear(Instruction *I) {
   // This clears microarchitectural buffers
   
   IRBuilder<> Builder(I->getNextNode());
-  
-  // TODO: Insert VERW instruction via inline asm
-  // asm volatile("verw %0" : : "m" (tmp));
-  
-  errs() << "      [STUB] Would insert VERW for MD_CLEAR\n";
+  DsmilIntrinsics::insertVERW(Builder);
 }
 
 bool SpecHardeningPass::hardwareMitigationsSufficient(const CPUFeatures &Features) {

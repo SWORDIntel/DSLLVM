@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+"""
+dsmil-clang - DSLLVM compiler wrapper with CPU feature integration
+
+This wrapper extends Clang with DSLLVM-specific functionality:
+- Automatic CPU profile loading
+- CPU feature metadata injection
+- DSLLVM pass loading
+- Flag translation (-fdsllvm-* -> pass options)
+"""
+
+import os
+import sys
+import json
+import subprocess
+import tempfile
+import argparse
+from pathlib import Path
+
+# Paths
+DSMIL_ROOT = Path(__file__).parent.parent
+CONFIG_DIR = DSMIL_ROOT / "config" / "cpu"
+PASSES_DIR = DSMIL_ROOT / "llvm-passes" / "build"
+PLUGIN_PATH = PASSES_DIR / "DSLLVMPasses.so"
+
+# Default CPU profile
+DEFAULT_PROFILE = "mtr-mtl-dsmil"
+
+# DSLLVM flags to LLVM options mapping
+DSLLVM_FLAG_MAP = {
+    "-fdsllvm-ai-accelerate": ["--dsllvm-ai-accelerate"],
+    "-fdsllvm-spec-hard": ["--dsllvm-spec-hard"],
+    "-fdsllvm-spec-mode=hardware": ["--dsllvm-spec-mode=hardware"],
+    "-fdsllvm-spec-mode=hybrid": ["--dsllvm-spec-mode=hybrid"],
+    "-fdsllvm-spec-mode=paranoid": ["--dsllvm-spec-mode=paranoid"],
+    "-fdsllvm-ct-check": ["--dsllvm-ct-check"],
+    "-fdsllvm-harden": ["--dsllvm-spec-hard", "--dsllvm-ct-check"],
+}
+
+def load_cpu_profile(profile_name):
+    """Load CPU profile JSON"""
+    profile_path = CONFIG_DIR / f"{profile_name}.json"
+    
+    if not profile_path.exists():
+        print(f"Warning: CPU profile '{profile_name}' not found at {profile_path}", file=sys.stderr)
+        return None
+    
+    try:
+        with open(profile_path) as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in {profile_path}: {e}", file=sys.stderr)
+        return None
+
+def generate_metadata_ir(profile):
+    """Generate LLVM IR metadata for CPU features"""
+    if not profile:
+        return ""
+    
+    features = []
+    for category, feature_list in profile.get("features", {}).items():
+        features.extend(feature_list)
+    
+    # Remove duplicates
+    features = sorted(set(features))
+    
+    # Generate metadata
+    metadata_lines = []
+    metadata_lines.append("")
+    metadata_lines.append("; DSLLVM CPU Feature Metadata")
+    metadata_lines.append("!dsllvm.cpu.profile = !{!0}")
+    metadata_lines.append("!dsllvm.cpu.features = !{" + ", ".join(f"!{i+1}" for i in range(len(features))) + "}")
+    metadata_lines.append("")
+    metadata_lines.append(f'!0 = !{{!"{profile.get("profile_name", "unknown")}"}}')
+    
+    for i, feature in enumerate(features):
+        metadata_lines.append(f'!{i+1} = !{{!"{feature}"}}')
+    
+    metadata_lines.append("")
+    
+    return "\n".join(metadata_lines)
+
+def inject_metadata(ir_file, metadata):
+    """Inject metadata into LLVM IR file"""
+    if not metadata:
+        return
+    
+    try:
+        with open(ir_file, 'a') as f:
+            f.write(metadata)
+    except IOError as e:
+        print(f"Error: Failed to inject metadata into {ir_file}: {e}", file=sys.stderr)
+
+def parse_args():
+    """Parse command-line arguments to extract DSLLVM-specific flags"""
+    dsllvm_flags = []
+    clang_args = []
+    cpu_profile = None
+    emit_ir = False
+    output_file = None
+    
+    i = 0
+    while i < len(sys.argv):
+        arg = sys.argv[i]
+        
+        # Skip script name
+        if i == 0:
+            i += 1
+            continue
+        
+        # Check for DSLLVM flags
+        if arg.startswith("-fdsllvm-profile="):
+            cpu_profile = arg.split("=", 1)[1]
+        elif arg in DSLLVM_FLAG_MAP:
+            dsllvm_flags.extend(DSLLVM_FLAG_MAP[arg])
+        elif arg.startswith("-fdsllvm-"):
+            # Unknown DSLLVM flag, pass through
+            print(f"Warning: Unknown DSLLVM flag: {arg}", file=sys.stderr)
+        elif arg == "-S" and i + 1 < len(sys.argv) and sys.argv[i+1] == "-emit-llvm":
+            emit_ir = True
+            clang_args.append(arg)
+        elif arg == "-emit-llvm":
+            emit_ir = True
+            clang_args.append(arg)
+        elif arg == "-o":
+            clang_args.append(arg)
+            if i + 1 < len(sys.argv):
+                output_file = sys.argv[i + 1]
+                clang_args.append(output_file)
+                i += 1
+        else:
+            clang_args.append(arg)
+        
+        i += 1
+    
+    return dsllvm_flags, clang_args, cpu_profile or DEFAULT_PROFILE, emit_ir, output_file
+
+def main():
+    # Parse arguments
+    dsllvm_flags, clang_args, cpu_profile, emit_ir, output_file = parse_args()
+    
+    # Load CPU profile
+    profile = load_cpu_profile(cpu_profile)
+    
+    if profile:
+        print(f"DSLLVM: Using CPU profile '{cpu_profile}'", file=sys.stderr)
+    else:
+        print(f"DSLLVM: Proceeding without CPU profile", file=sys.stderr)
+    
+    # Add LLVM target features from profile
+    # Note: Direct -march= is better than -mattr for clang
+    if profile and "llvm_target_features" in profile:
+        # Instead of -mattr, we'll use the target_triple from profile
+        # or add specific feature flags
+        pass  # Features will be in the IR metadata for opt to use
+    
+    # If emitting IR and we have a profile, inject metadata
+    if emit_ir and profile and output_file:
+        # Compile normally first
+        result = subprocess.run(["clang"] + clang_args)
+        
+        if result.returncode == 0 and output_file.endswith(('.ll', '.bc')):
+            # Inject metadata
+            metadata = generate_metadata_ir(profile)
+            inject_metadata(output_file, metadata)
+            print(f"DSLLVM: Injected CPU feature metadata into {output_file}", file=sys.stderr)
+        
+        return result.returncode
+    
+    # If compiling to object/binary, use two-stage compilation
+    if profile and output_file and not output_file.endswith(('.ll', '.bc')):
+        # Stage 1: Compile to IR
+        with tempfile.NamedTemporaryFile(suffix='.ll', delete=False, mode='w') as tmp_ir:
+            tmp_ir_path = tmp_ir.name
+        
+        # Compile to LLVM IR
+        ir_args = [arg for arg in clang_args if arg != output_file]
+        ir_args.extend(["-S", "-emit-llvm", "-o", tmp_ir_path])
+        
+        result = subprocess.run(["clang"] + ir_args)
+        if result.returncode != 0:
+            os.unlink(tmp_ir_path)
+            return result.returncode
+        
+        # Inject metadata
+        metadata = generate_metadata_ir(profile)
+        inject_metadata(tmp_ir_path, metadata)
+        
+        # Stage 2: Run DSLLVM passes if plugin exists
+        if PLUGIN_PATH.exists() and dsllvm_flags:
+            print(f"DSLLVM: Running optimization passes", file=sys.stderr)
+            
+            # Run opt with DSLLVM passes
+            opt_args = [
+                "opt",
+                f"--load-pass-plugin={PLUGIN_PATH}",
+                "--passes=dsmil-default",
+            ]
+            opt_args.extend(dsllvm_flags)
+            opt_args.extend(["-S", tmp_ir_path, "-o", tmp_ir_path])
+            
+            result = subprocess.run(opt_args)
+            if result.returncode != 0:
+                os.unlink(tmp_ir_path)
+                return result.returncode
+        
+        # Stage 3: Compile IR to final output
+        final_args = ["clang", "-x", "ir", tmp_ir_path, "-o", output_file]
+        # Add linker flags from original args
+        for arg in clang_args:
+            if arg.startswith("-L") or arg.startswith("-l") or arg.startswith("-Wl,"):
+                final_args.append(arg)
+        
+        result = subprocess.run(final_args)
+        os.unlink(tmp_ir_path)
+        
+        return result.returncode
+    
+    # Default: pass through to clang
+    result = subprocess.run(["clang"] + clang_args)
+    return result.returncode
+
+if __name__ == "__main__":
+    sys.exit(main())

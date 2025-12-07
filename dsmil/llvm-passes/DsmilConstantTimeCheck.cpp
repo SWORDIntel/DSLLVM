@@ -5,6 +5,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "DsmilConstantTimeCheck.h"
+#include "DsmilIntrinsics.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/IRBuilder.h"
@@ -211,6 +212,7 @@ bool ConstantTimeCheckPass::insertCacheFlushes(Function &F, const CPUFeatures &F
       // Look for stores of secret data
       if (auto *SI = dyn_cast<StoreInst>(&I)) {
         Value *Val = SI->getValueOperand();
+        Value *Ptr = SI->getPointerOperand();
         
         if (isSecretTainted(Val)) {
           IRBuilder<> Builder(SI->getNextNode());
@@ -218,11 +220,11 @@ bool ConstantTimeCheckPass::insertCacheFlushes(Function &F, const CPUFeatures &F
           // Insert cache flush (CLFLUSHOPT or CLWB)
           if (Features.hasCLFLUSHOPT()) {
             errs() << "      Inserting CLFLUSHOPT after secret store\n";
-            // TODO: Insert actual intrinsic
+            DsmilIntrinsics::insertCLFLUSHOPT(Builder, Ptr);
             Modified = true;
           } else if (Features.hasCLWB()) {
             errs() << "      Inserting CLWB after secret store\n";
-            // TODO: Insert actual intrinsic
+            DsmilIntrinsics::insertCLWB(Builder, Ptr);
             Modified = true;
           }
         }
@@ -237,7 +239,7 @@ bool ConstantTimeCheckPass::insertCacheFlushes(Function &F, const CPUFeatures &F
       
       // Insert MFENCE to ensure all flushes complete
       errs() << "      Inserting MFENCE at function exit\n";
-      // TODO: Insert actual intrinsic
+      DsmilIntrinsics::insertMFENCE(Builder);
       Modified = true;
     }
   }

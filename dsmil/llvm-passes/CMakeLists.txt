@@ -70,6 +70,23 @@ target_link_libraries(DsmilConstantTimeCheck
   LLVM
 )
 
+# Plugin: Combined DSLLVM Passes (for opt --load-pass-plugin)
+add_library(DSLLVMPasses MODULE
+  PassRegistry.cpp
+  DsmilCPUFeatures.cpp
+  DsmilBandwidthEstimate.cpp
+  DsmilAIAccelerate.cpp
+  DsmilSpecHardening.cpp
+  DsmilConstantTimeCheck.cpp
+)
+
+target_link_libraries(DSLLVMPasses
+  LLVM
+)
+
+# Don't add 'lib' prefix to plugin
+set_target_properties(DSLLVMPasses PROPERTIES PREFIX "")
+
 # Installation
 install(TARGETS 
   DsmilCPUFeatures
@@ -77,6 +94,7 @@ install(TARGETS
   DsmilAIAccelerate
   DsmilSpecHardening
   DsmilConstantTimeCheck
+  DSLLVMPasses
   LIBRARY DESTINATION lib/dsllvm
 )
 
