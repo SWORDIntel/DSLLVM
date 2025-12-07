@@ -53,6 +53,20 @@ Characteristics:
 
 This centralizes the "optimal flags" that would otherwise be replicated in `CFLAGS/LDFLAGS`.
 
+**CPU Feature Integration**: DSLLVM treats CPU features as first-class inputs to optimization, security, and profiling decisions. See:
+
+* `docs/DSLLVM_CPU_FEATURE_MODEL.md` – Complete CPU feature integration specification
+* `docs/CPU_FEATURES_REFERENCE.md` – Detailed feature descriptions for Meteor Lake
+* `config/cpu/mtr-mtl-dsmil.json` – Meteor Lake DSMIL CPU profile
+* `tools/dsllvm-cpufeatures` – Runtime feature enumeration tool
+
+Key features leveraged:
+
+* **AI/Vector**: AVX-VNNI, FSRM, ERMS for AI hotpaths and memory ops
+* **Security**: SMEP, SMAP, UMIP, CET (user_shstk), IBRS, MD_CLEAR for hardening
+* **Profiling**: Intel PT, arch LBR, PEBS, HFI for observability
+* **Virtualization**: VMX, EPT for hypervisor builds
+
 ### 1.2 Frontend Wrappers
 
 Thin wrappers:
@@ -67,6 +81,14 @@ Default options baked in:
 - `-march=meteorlake -mtune=meteorlake`
 - `-O3 -pipe -fomit-frame-pointer -funroll-loops -fstrict-aliasing -fno-plt`
 - `-ffunction-sections -fdata-sections -flto=auto`
+
+Additional CPU feature flags (optional):
+
+- `-fdsllvm-ai-accelerate` – Enable AVX-VNNI AI acceleration
+- `-fdsllvm-harden` – Enable CET shadow stack and security hardening
+- `-fdsllvm-spec-hard` – Enable speculation mitigations using hardware features
+- `-fdsllvm-prof=pt|lbr|pebs` – Enable hardware profiling modes
+- `-fdsllvm-profile=mtr-mtl-dsmil` – Load Meteor Lake CPU feature profile
 
 These wrappers are the **canonical toolchain** for DSMIL kernel, drivers, agents, and userland.
 

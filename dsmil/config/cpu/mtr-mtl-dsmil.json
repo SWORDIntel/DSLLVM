@@ -1,0 +1,225 @@
+{
+  "schema": "dsllvm-cpu-profile-v1",
+  "profile_name": "mtr-mtl-dsmil",
+  "description": "Intel Core Ultra 7 165H (Meteor Lake) CPU feature profile for DSMIL",
+  "arch": "x86_64",
+  "vendor": "GenuineIntel",
+  "family_model_stepping": "06_aa_02",
+  "target_triple": "x86_64-dsmil-meteorlake-elf",
+  
+  "llvm_target_features": [
+    "+avx2", "+avx_vnni", "+aes", "+vaes", "+sha", "+gfni",
+    "+bmi", "+bmi2", "+popcnt", "+fma", "+sse4.2",
+    "+movdiri", "+waitpkg", "+fsrm", "+erms"
+  ],
+  
+  "features": {
+    "ai_acceleration": [
+      "avx_vnni",
+      "fsrm",
+      "erms",
+      "bmi1",
+      "bmi2",
+      "abm",
+      "rep_good",
+      "fma",
+      "avx2"
+    ],
+    "security": [
+      "smep",
+      "smap",
+      "umip",
+      "user_shstk",
+      "tme",
+      "smx",
+      "md_clear",
+      "flush_l1d",
+      "ssbd",
+      "ibrs_enhanced",
+      "stibp",
+      "ibpb",
+      "nx",
+      "pku",
+      "arch_capabilities"
+    ],
+    "profiling": [
+      "intel_pt",
+      "arch_lbr",
+      "pebs",
+      "bts",
+      "arch_perfmon",
+      "hfi",
+      "constant_tsc",
+      "nonstop_tsc"
+    ],
+    "virtualization": [
+      "vmx",
+      "ept",
+      "ept_ad",
+      "vpid",
+      "x2apic",
+      "tpr_shadow",
+      "flexpriority",
+      "vnmi",
+      "pdpe1gb"
+    ],
+    "crypto": [
+      "aes",
+      "vaes",
+      "sha_ni",
+      "pclmulqdq",
+      "rdrand",
+      "rdseed",
+      "gfni"
+    ],
+    "memory": [
+      "fsrm",
+      "erms",
+      "3dnowprefetch",
+      "clflushopt",
+      "clwb",
+      "clflush"
+    ],
+    "cache": [
+      "clflushopt",
+      "clwb",
+      "clflush"
+    ],
+    "timing": [
+      "constant_tsc",
+      "nonstop_tsc",
+      "tsc_deadline_timer",
+      "rdtscp"
+    ],
+    "tlb": [
+      "pcid",
+      "invpcid",
+      "pdpe1gb"
+    ],
+    "power": [
+      "hwp",
+      "hwp_epp",
+      "hwp_notify"
+    ],
+    "misc": [
+      "bus_lock_detect",
+      "split_lock_detect",
+      "nopl"
+    ]
+  },
+  
+  "feature_descriptions": {
+    "nopl": "Alternate multi-byte NOP encoding, used for alignment and patchable code sequences",
+    "vme": "Virtual 8086 Mode Enhancements, assists running legacy 16-bit code under protected mode",
+    "avx_vnni": "AVX Vector Neural Network Instructions for INT8 AI acceleration",
+    "avx2": "Advanced Vector Extensions 2 (256-bit SIMD)",
+    "fma": "Fused Multiply-Add instructions",
+    "fsrm": "Fast Short REP MOVSB for optimized small memory copies",
+    "erms": "Enhanced REP MOVSB/STOSB for optimized memory operations",
+    "bmi1": "Bit Manipulation Instruction Set 1 (ANDN, BEXTR, BLSI, etc.)",
+    "bmi2": "Bit Manipulation Instruction Set 2 (PEXT, PDEP, etc.)",
+    "abm": "Advanced Bit Manipulation (LZCNT, POPCNT)",
+    "rep_good": "REP string operations are fast on this CPU",
+    "intel_pt": "Intel Processor Trace for hardware-assisted execution tracing",
+    "arch_lbr": "Architectural Last Branch Records",
+    "pebs": "Precise Event Based Sampling",
+    "bts": "Branch Trace Store",
+    "arch_perfmon": "Architectural Performance Monitoring",
+    "hfi": "Hardware Feedback Interface for performance/power hints",
+    "constant_tsc": "TSC increments at constant rate (reliable timing)",
+    "nonstop_tsc": "TSC continues in deep C-states (always-on timing)",
+    "smep": "Supervisor Mode Execution Prevention",
+    "smap": "Supervisor Mode Access Prevention",
+    "umip": "User Mode Instruction Prevention",
+    "user_shstk": "User-mode shadow stack (CET)",
+    "tme": "Total Memory Encryption",
+    "smx": "Safer Mode Extensions (TXT)",
+    "md_clear": "Microarchitectural Data Sampling mitigation",
+    "flush_l1d": "L1D cache flush capability",
+    "ssbd": "Speculative Store Bypass Disable",
+    "ibrs_enhanced": "Enhanced Indirect Branch Restricted Speculation",
+    "stibp": "Single Thread Indirect Branch Predictor",
+    "ibpb": "Indirect Branch Prediction Barrier",
+    "nx": "No-Execute bit (W^X enforcement)",
+    "pku": "Protection Keys for Userspace",
+    "arch_capabilities": "IA32_ARCH_CAPABILITIES MSR (security feature enumeration)",
+    "vmx": "Virtual Machine Extensions (VT-x)",
+    "ept": "Extended Page Tables",
+    "ept_ad": "EPT Accessed/Dirty bits",
+    "vpid": "Virtual Processor ID",
+    "x2apic": "Extended xAPIC",
+    "pdpe1gb": "1GB page support",
+    "aes": "AES-NI instructions",
+    "vaes": "Vector AES instructions",
+    "sha_ni": "SHA-1/SHA-256 hardware acceleration",
+    "pclmulqdq": "Carry-less multiplication for AES-GCM/CRC",
+    "rdrand": "Hardware DRBG random number generator",
+    "rdseed": "Direct entropy source (higher quality than rdrand)",
+    "gfni": "Galois Field instructions",
+    "clflushopt": "Optimized cache line flush (prevents cache timing attacks)",
+    "clwb": "Cache line write-back without invalidate (persistent memory)",
+    "clflush": "CLFLUSH instruction",
+    "tsc_deadline_timer": "APIC timer deadline mode",
+    "rdtscp": "RDTSCP instruction",
+    "pcid": "Process-Context Identifiers (reduces TLB flushes)",
+    "invpcid": "Invalidate PCID (paired with pcid)",
+    "hwp": "Hardware P-states (informational)",
+    "hwp_epp": "HWP energy performance preference (informational)",
+    "bus_lock_detect": "Bus lock detection and notification",
+    "split_lock_detect": "Split lock detection and notification"
+  },
+  
+  "compiler_flags": {
+    "default": [
+      "-march=meteorlake",
+      "-mtune=meteorlake",
+      "-O3",
+      "-pipe",
+      "-fomit-frame-pointer",
+      "-funroll-loops",
+      "-fstrict-aliasing",
+      "-fno-plt",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-flto=auto"
+    ],
+    "ai_accelerate": [
+      "-fdsllvm-ai-accelerate",
+      "-mavx2",
+      "-mavx-vnni"
+    ],
+    "harden": [
+      "-fdsllvm-harden",
+      "-fcf-protection=full",
+      "-fstack-protector-strong",
+      "-D_FORTIFY_SOURCE=2"
+    ],
+    "spec_hard": [
+      "-fdsllvm-spec-hard",
+      "-mretpoline",
+      "-mindirect-branch=thunk-extern"
+    ],
+    "profiling_pt": [
+      "-fdsllvm-prof=pt",
+      "-gdwarf-5",
+      "-g"
+    ],
+    "profiling_lbr": [
+      "-fdsllvm-prof=lbr"
+    ]
+  },
+  
+  "assumptions": {
+    "tme_required": true,
+    "txt_expected": false,
+    "cet_available": true,
+    "speculation_mitigations_active": true
+  },
+  
+  "metadata": {
+    "created": "2025-12-07",
+    "version": "1.0",
+    "validated_on": "Intel Core Ultra 7 165H",
+    "notes": "Production profile for DSMIL Meteor Lake deployments"
+  }
+}
