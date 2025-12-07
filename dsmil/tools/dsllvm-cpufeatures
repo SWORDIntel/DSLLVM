@@ -58,34 +58,59 @@ def categorize_features(flags):
         'security': [],
         'profiling': [],
         'virtualization': [],
+        'crypto': [],
         'memory': [],
+        'cache': [],
+        'timing': [],
+        'tlb': [],
+        'power': [],
         'misc': []
     }
     
     # AI/Vector/Performance features
     ai_features = ['avx_vnni', 'fsrm', 'erms', 'bmi1', 'bmi2', 'abm', 'rep_good', 
-                   'avx', 'avx2', 'fma', 'sse4_1', 'sse4_2', 'popcnt']
+                   'avx', 'avx2', 'fma', 'sse4_1', 'sse4_2', 'popcnt', 'sse3',
+                   'ssse3', 'sse', 'sse2', 'mmx']
     
     # Security features
     security_features = ['smep', 'smap', 'umip', 'user_shstk', 'tme', 'smx', 
                          'md_clear', 'flush_l1d', 'ssbd', 'ibrs_enhanced', 
-                         'stibp', 'ibpb', 'nx', 'pku']
+                         'stibp', 'ibpb', 'ibrs', 'nx', 'pku', 'arch_capabilities',
+                         'ibt', 'serialize']
     
     # Profiling/observability features
     profiling_features = ['intel_pt', 'arch_lbr', 'pebs', 'bts', 'arch_perfmon', 
-                          'hfi', 'pdcm', 'ds_cpl', 'dtes64', 'monitor']
+                          'hfi', 'pdcm', 'ds_cpl', 'dtes64', 'monitor', 'dts',
+                          'constant_tsc', 'nonstop_tsc', 'art', 'aperfmperf']
     
     # Virtualization features
     virt_features = ['vmx', 'ept', 'ept_ad', 'vpid', 'x2apic', 'tpr_shadow', 
-                     'flexpriority', 'vnmi', 'rdtscp']
+                     'flexpriority', 'vnmi', 'rdtscp', 'pdpe1gb']
+    
+    # Cryptography features
+    crypto_features = ['aes', 'vaes', 'sha_ni', 'pclmulqdq', 'rdrand', 'rdseed',
+                       'gfni', 'vpclmulqdq', 'sha1_ni', 'sha256_ni']
     
     # Memory features
-    memory_features = ['fsrm', 'erms', '3dnowprefetch', 'clflushopt', 'clwb', 
-                       'clflush', 'invpcid']
+    memory_features = ['fsrm', 'erms', '3dnowprefetch', 'rep_good']
+    
+    # Cache features
+    cache_features = ['clflushopt', 'clwb', 'clflush']
+    
+    # Timing features
+    timing_features = ['constant_tsc', 'nonstop_tsc', 'tsc_deadline_timer', 
+                       'rdtscp', 'tsc_adjust', 'tsc_known_freq', 'arat', 'art']
+    
+    # TLB features
+    tlb_features = ['pcid', 'invpcid', 'pdpe1gb', 'pge']
+    
+    # Power management features
+    power_features = ['hwp', 'hwp_epp', 'hwp_notify', 'hwp_act_window', 
+                      'hwp_pkg_req', 'epb', 'ida', 'est']
     
     # Misc features
-    misc_features = ['bus_lock_detect', 'split_lock_detect', 'nopl', 'constant_tsc',
-                     'nonstop_tsc', 'tsc_deadline_timer', 'rdrand', 'rdseed']
+    misc_features = ['bus_lock_detect', 'split_lock_detect', 'nopl', 
+                     'cpuid_fault', 'waitpkg', 'movdiri', 'movdir64b']
     
     for flag in flags:
         if flag in ai_features:
@@ -96,8 +121,18 @@ def categorize_features(flags):
             categories['profiling'].append(flag)
         if flag in virt_features:
             categories['virtualization'].append(flag)
+        if flag in crypto_features:
+            categories['crypto'].append(flag)
         if flag in memory_features:
             categories['memory'].append(flag)
+        if flag in cache_features:
+            categories['cache'].append(flag)
+        if flag in timing_features:
+            categories['timing'].append(flag)
+        if flag in tlb_features:
+            categories['tlb'].append(flag)
+        if flag in power_features:
+            categories['power'].append(flag)
         if flag in misc_features:
             categories['misc'].append(flag)
     
@@ -119,17 +154,31 @@ def generate_llvm_target_features(flags):
         'avx_vnni': '+avx_vnni',
         'aes': '+aes',
         'vaes': '+vaes',
-        'sha': '+sha',
+        'sha_ni': '+sha',
         'gfni': '+gfni',
         'bmi1': '+bmi',
         'bmi2': '+bmi2',
         'popcnt': '+popcnt',
         'fma': '+fma',
         'sse4_2': '+sse4.2',
+        'sse4_1': '+sse4.1',
+        'ssse3': '+ssse3',
+        'sse3': '+sse3',
         'movdiri': '+movdiri',
+        'movdir64b': '+movdir64b',
         'waitpkg': '+waitpkg',
         'fsrm': '+fsrm',
         'erms': '+erms',
+        'pclmulqdq': '+pclmul',
+        'rdrand': '+rdrnd',
+        'rdseed': '+rdseed',
+        'clflushopt': '+clflushopt',
+        'clwb': '+clwb',
+        'f16c': '+f16c',
+        'xsave': '+xsave',
+        'xsaveopt': '+xsaveopt',
+        'xsavec': '+xsavec',
+        'xsaves': '+xsaves',
     }
     
     for cpu_flag, llvm_flag in flag_mapping.items():

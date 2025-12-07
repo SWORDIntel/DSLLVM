@@ -19,8 +19,11 @@
       "fsrm",
       "erms",
       "bmi1",
+      "bmi2",
       "abm",
-      "rep_good"
+      "rep_good",
+      "fma",
+      "avx2"
     ],
     "security": [
       "smep",
@@ -34,7 +37,10 @@
       "ssbd",
       "ibrs_enhanced",
       "stibp",
-      "ibpb"
+      "ibpb",
+      "nx",
+      "pku",
+      "arch_capabilities"
     ],
     "profiling": [
       "intel_pt",
@@ -42,7 +48,9 @@
       "pebs",
       "bts",
       "arch_perfmon",
-      "hfi"
+      "hfi",
+      "constant_tsc",
+      "nonstop_tsc"
     ],
     "virtualization": [
       "vmx",
@@ -52,20 +60,51 @@
       "x2apic",
       "tpr_shadow",
       "flexpriority",
-      "vnmi"
+      "vnmi",
+      "pdpe1gb"
+    ],
+    "crypto": [
+      "aes",
+      "vaes",
+      "sha_ni",
+      "pclmulqdq",
+      "rdrand",
+      "rdseed",
+      "gfni"
     ],
     "memory": [
       "fsrm",
       "erms",
       "3dnowprefetch",
       "clflushopt",
-      "clwb"
+      "clwb",
+      "clflush"
+    ],
+    "cache": [
+      "clflushopt",
+      "clwb",
+      "clflush"
+    ],
+    "timing": [
+      "constant_tsc",
+      "nonstop_tsc",
+      "tsc_deadline_timer",
+      "rdtscp"
+    ],
+    "tlb": [
+      "pcid",
+      "invpcid",
+      "pdpe1gb"
+    ],
+    "power": [
+      "hwp",
+      "hwp_epp",
+      "hwp_notify"
     ],
     "misc": [
       "bus_lock_detect",
       "split_lock_detect",
-      "nopl",
-      "pku"
+      "nopl"
     ]
   },
   
@@ -73,16 +112,22 @@
     "nopl": "Alternate multi-byte NOP encoding, used for alignment and patchable code sequences",
     "vme": "Virtual 8086 Mode Enhancements, assists running legacy 16-bit code under protected mode",
     "avx_vnni": "AVX Vector Neural Network Instructions for INT8 AI acceleration",
+    "avx2": "Advanced Vector Extensions 2 (256-bit SIMD)",
+    "fma": "Fused Multiply-Add instructions",
     "fsrm": "Fast Short REP MOVSB for optimized small memory copies",
     "erms": "Enhanced REP MOVSB/STOSB for optimized memory operations",
     "bmi1": "Bit Manipulation Instruction Set 1 (ANDN, BEXTR, BLSI, etc.)",
+    "bmi2": "Bit Manipulation Instruction Set 2 (PEXT, PDEP, etc.)",
     "abm": "Advanced Bit Manipulation (LZCNT, POPCNT)",
+    "rep_good": "REP string operations are fast on this CPU",
     "intel_pt": "Intel Processor Trace for hardware-assisted execution tracing",
     "arch_lbr": "Architectural Last Branch Records",
     "pebs": "Precise Event Based Sampling",
     "bts": "Branch Trace Store",
     "arch_perfmon": "Architectural Performance Monitoring",
     "hfi": "Hardware Feedback Interface for performance/power hints",
+    "constant_tsc": "TSC increments at constant rate (reliable timing)",
+    "nonstop_tsc": "TSC continues in deep C-states (always-on timing)",
     "smep": "Supervisor Mode Execution Prevention",
     "smap": "Supervisor Mode Access Prevention",
     "umip": "User Mode Instruction Prevention",
@@ -95,10 +140,31 @@
     "ibrs_enhanced": "Enhanced Indirect Branch Restricted Speculation",
     "stibp": "Single Thread Indirect Branch Predictor",
     "ibpb": "Indirect Branch Prediction Barrier",
+    "nx": "No-Execute bit (W^X enforcement)",
+    "pku": "Protection Keys for Userspace",
+    "arch_capabilities": "IA32_ARCH_CAPABILITIES MSR (security feature enumeration)",
     "vmx": "Virtual Machine Extensions (VT-x)",
     "ept": "Extended Page Tables",
     "ept_ad": "EPT Accessed/Dirty bits",
     "vpid": "Virtual Processor ID",
+    "x2apic": "Extended xAPIC",
+    "pdpe1gb": "1GB page support",
+    "aes": "AES-NI instructions",
+    "vaes": "Vector AES instructions",
+    "sha_ni": "SHA-1/SHA-256 hardware acceleration",
+    "pclmulqdq": "Carry-less multiplication for AES-GCM/CRC",
+    "rdrand": "Hardware DRBG random number generator",
+    "rdseed": "Direct entropy source (higher quality than rdrand)",
+    "gfni": "Galois Field instructions",
+    "clflushopt": "Optimized cache line flush (prevents cache timing attacks)",
+    "clwb": "Cache line write-back without invalidate (persistent memory)",
+    "clflush": "CLFLUSH instruction",
+    "tsc_deadline_timer": "APIC timer deadline mode",
+    "rdtscp": "RDTSCP instruction",
+    "pcid": "Process-Context Identifiers (reduces TLB flushes)",
+    "invpcid": "Invalidate PCID (paired with pcid)",
+    "hwp": "Hardware P-states (informational)",
+    "hwp_epp": "HWP energy performance preference (informational)",
     "bus_lock_detect": "Bus lock detection and notification",
     "split_lock_detect": "Split lock detection and notification"
   },
