@@ -26,6 +26,8 @@ static struct {
     uint32_t num_features;
     struct timespec start_time;
     uint64_t total_memory_peak;
+    uint32_t function_count;
+    uint64_t total_code_size;
 } metrics_state = {0};
 
 static uint64_t get_memory_usage(void) {
@@ -127,6 +129,16 @@ int dsmil_metrics_end_pass(int pass_id, uint64_t ir_size_before, uint64_t ir_siz
     pass->ir_size_before = ir_size_before;
     pass->ir_size_after = ir_size_after;
     pass->success = true;
+    
+    /* Estimate function count and code size from IR sizes */
+    /* Rough estimate: 1 function per 1KB of IR (conservative) */
+    if (ir_size_after > 0) {
+        uint32_t estimated_functions = (uint32_t)(ir_size_after / 1024);
+        if (estimated_functions > metrics_state.function_count) {
+            metrics_state.function_count = estimated_functions;
+        }
+        metrics_state.total_code_size = ir_size_after;
+    }
 
     /* Write pass metrics to JSON */
     if (pass_id > 0) {
@@ -228,9 +240,29 @@ int dsmil_metrics_get_build_metrics(dsmil_build_metrics_t *metrics) {
     metrics->total_compile_time_ns = total_time;
     metrics->total_memory_peak_bytes = metrics_state.total_memory_peak;
     metrics->num_passes = metrics_state.num_passes;
-    metrics->num_functions = 0; /* TODO: Track function count */
-    metrics->code_size_bytes = 0; /* TODO: Track code size */
-    metrics->optimization_effectiveness = 0.0; /* TODO: Calculate */
+    metrics->num_functions = metrics_state.function_count;
+    metrics->code_size_bytes = metrics_state.total_code_size;
+    
+    /* Calculate optimization effectiveness: ratio of IR reduction across passes */
+    if (metrics_state.num_passes > 0) {
+        uint64_t total_ir_reduction = 0;
+        uint64_t total_ir_before = 0;
+        for (uint32_t i = 0; i < metrics_state.num_passes; i++) {
+            if (metrics_state.passes[i].ir_size_before > 0) {
+                total_ir_before += metrics_state.passes[i].ir_size_before;
+                if (metrics_state.passes[i].ir_size_after < metrics_state.passes[i].ir_size_before) {
+                    total_ir_reduction += (metrics_state.passes[i].ir_size_before - metrics_state.passes[i].ir_size_after);
+                }
+            }
+        }
+        if (total_ir_before > 0) {
+            metrics->optimization_effectiveness = (double)total_ir_reduction / (double)total_ir_before;
+        } else {
+            metrics->optimization_effectiveness = 0.0;
+        }
+    } else {
+        metrics->optimization_effectiveness = 0.0;
+    }
     metrics->passes = metrics_state.passes;
     metrics->features = metrics_state.features;
 

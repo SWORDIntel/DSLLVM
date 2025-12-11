@@ -325,7 +325,7 @@ bool DsmilCrossDomainPass::insertCrossDomainGuards(Module &M) {
     bool Modified = false;
 
     // Get or create guard runtime function
-    auto *I8Ptr = PointerType::get(Type::getInt8Ty(M.getContext()), 0);
+    auto *I8Ptr = PointerType::getUnqual(M.getContext());
     SmallVector<Type *, 5> ParamTys{
         I8Ptr,                          // data
         Type::getInt64Ty(M.getContext()), // length

@@ -6,6 +6,12 @@ project(DsmilTests C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+find_package(PkgConfig REQUIRED)
+find_package(OpenSSL REQUIRED)
+pkg_check_modules(TSS2_SYS REQUIRED tss2-sys)
+pkg_check_modules(TSS2_TCTI_DEVICE REQUIRED tss2-tcti-device)
+pkg_check_modules(LIBOQS REQUIRED liboqs)
+
 get_filename_component(DSMIL_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 
 # Runtime libraries
@@ -44,6 +50,26 @@ target_compile_definitions(dsmil_fuzz_telemetry_advanced PUBLIC
 )
 target_link_libraries(dsmil_fuzz_telemetry_advanced PUBLIC pthread)
 
+add_library(dsmil_device255_crypto_runtime STATIC
+    ${DSMIL_ROOT_DIR}/lib/Runtime/dsmil_device255_crypto_runtime.c
+)
+target_include_directories(dsmil_device255_crypto_runtime PUBLIC
+    ${DSMIL_ROOT_DIR}/include
+    ${TSS2_SYS_INCLUDE_DIRS}
+    ${TSS2_TCTI_DEVICE_INCLUDE_DIRS}
+    ${LIBOQS_INCLUDE_DIRS}
+)
+target_compile_definitions(dsmil_device255_crypto_runtime PUBLIC
+    _POSIX_C_SOURCE=200809L
+    _GNU_SOURCE
+)
+target_link_libraries(dsmil_device255_crypto_runtime PUBLIC
+    OpenSSL::SSL OpenSSL::Crypto
+    ${TSS2_SYS_LIBRARIES}
+    ${TSS2_TCTI_DEVICE_LIBRARIES}
+    ${LIBOQS_LIBRARIES}
+)
+
 # Runtime tests
 add_executable(test_ot_telemetry_runtime
     runtime/test_ot_telemetry.c
@@ -73,6 +99,23 @@ target_link_libraries(test_fuzz_telemetry_advanced_runtime
 )
 target_include_directories(test_fuzz_telemetry_advanced_runtime PRIVATE
     ${DSMIL_ROOT_DIR}/include
+)
+
+add_executable(test_device255_crypto_runtime
+    runtime/test_device255_crypto.c
+)
+target_link_libraries(test_device255_crypto_runtime
+    dsmil_device255_crypto_runtime
+    OpenSSL::SSL OpenSSL::Crypto
+    ${TSS2_SYS_LIBRARIES}
+    ${TSS2_TCTI_DEVICE_LIBRARIES}
+    ${LIBOQS_LIBRARIES}
+)
+target_include_directories(test_device255_crypto_runtime PRIVATE
+    ${DSMIL_ROOT_DIR}/include
+    ${TSS2_SYS_INCLUDE_DIRS}
+    ${TSS2_TCTI_DEVICE_INCLUDE_DIRS}
+    ${LIBOQS_INCLUDE_DIRS}
 )
 
 # Integration tests
@@ -151,6 +194,7 @@ add_custom_target(check-dsmil-runtime
     COMMAND ${CMAKE_BINARY_DIR}/test_ot_telemetry_runtime
     COMMAND ${CMAKE_BINARY_DIR}/test_fuzz_telemetry_runtime
     COMMAND ${CMAKE_BINARY_DIR}/test_fuzz_telemetry_advanced_runtime
+    COMMAND ${CMAKE_BINARY_DIR}/test_device255_crypto_runtime
     COMMAND ${CMAKE_BINARY_DIR}/test_telecom_macros
     COMMAND ${CMAKE_BINARY_DIR}/test_attributes
     COMMAND ${CMAKE_BINARY_DIR}/test_telemetry_expansion_runtime
@@ -159,6 +203,7 @@ add_custom_target(check-dsmil-runtime
         test_ot_telemetry_runtime
         test_fuzz_telemetry_runtime
         test_fuzz_telemetry_advanced_runtime
+        test_device255_crypto_runtime
         test_telecom_macros
         test_attributes
         test_telemetry_expansion_runtime

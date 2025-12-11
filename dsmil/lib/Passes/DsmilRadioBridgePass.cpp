@@ -223,7 +223,7 @@ void DsmilRadioBridgePass::insertFraming(Function *F, RadioProtocol Proto) {
 
     // Insert call to framing function
     // (Simplified - production would analyze function and insert at send points)
-    auto *I8Ptr = PointerType::get(Type::getInt8Ty(Ctx), 0);
+    auto *I8Ptr = PointerType::getUnqual(Ctx);
     FunctionCallee FramingFunc = M->getOrInsertFunction(
         framing_func, Type::getInt32Ty(Ctx), I8Ptr, Type::getInt64Ty(Ctx),
         I8Ptr);
@@ -252,7 +252,7 @@ void DsmilRadioBridgePass::createBridgeAdapter(Module &M, Function *BridgeFunc) 
     LLVMContext &Ctx = M.getContext();
 
     // Create unified bridge runtime function
-    auto *I8Ptr = PointerType::get(Type::getInt8Ty(Ctx), 0);
+    auto *I8Ptr = PointerType::getUnqual(Ctx);
     FunctionCallee UnifiedBridge = M.getOrInsertFunction(
         "dsmil_radio_bridge_send", Type::getInt32Ty(Ctx), I8Ptr, I8Ptr,
         Type::getInt64Ty(Ctx));

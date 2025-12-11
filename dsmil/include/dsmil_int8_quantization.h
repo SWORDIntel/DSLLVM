@@ -90,6 +90,8 @@ typedef struct {
     dsmil_int8_params_t *B_params;  // Matrix B quantization params
     dsmil_int8_params_t *C_params;  // Output matrix C quantization params
     bool use_hardware_accel;   // Use NPU/GPU INT8 acceleration
+    uint32_t device_id;        // Optional hardware device id
+    uint8_t layer;             // Optional layer id
 } dsmil_int8_matmul_ctx_t;
 
 /**

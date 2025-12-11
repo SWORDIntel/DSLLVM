@@ -7,7 +7,6 @@
 
 #define _POSIX_C_SOURCE 200809L
 #include "dsmil_intelligence_flow.h"
-#include "dsmil_cross_domain_runtime.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

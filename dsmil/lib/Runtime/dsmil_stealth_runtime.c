@@ -12,6 +12,9 @@
 #include <time.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 /**
  * Get current timestamp in nanoseconds
@@ -125,9 +128,48 @@ void dsmil_stealth_shutdown(void) {
  * @return 1 if stealth mode active, 0 otherwise
  */
 int dsmil_stealth_is_active(void) {
-    // Check if runtime is in stealth mode
-    // This could be controlled via environment variable or config file
-    return 0; // TODO: Implement
+    /* Check if runtime is in stealth mode via environment variable */
+    const char *stealth_env = getenv("DSMIL_STEALTH_MODE");
+    if (stealth_env) {
+        /* Check for enabled values */
+        if (strcmp(stealth_env, "1") == 0 ||
+            strcmp(stealth_env, "true") == 0 ||
+            strcmp(stealth_env, "TRUE") == 0 ||
+            strcmp(stealth_env, "yes") == 0 ||
+            strcmp(stealth_env, "YES") == 0) {
+            return 1;
+        }
+    }
+    
+    /* Also check config file if it exists */
+    const char *config_path = getenv("DSMIL_CONFIG");
+    if (!config_path) {
+        config_path = "/etc/dsmil/stealth.conf";
+    }
+    
+    FILE *fp = fopen(config_path, "r");
+    if (fp) {
+        char line[256];
+        while (fgets(line, sizeof(line), fp)) {
+            /* Skip comments and empty lines */
+            if (line[0] == '#' || line[0] == '\n') {
+                continue;
+            }
+            
+            /* Check for "stealth_mode=1" or "stealth_mode=true" */
+            if (strstr(line, "stealth_mode") != NULL) {
+                if (strstr(line, "=1") != NULL || 
+                    strstr(line, "=true") != NULL ||
+                    strstr(line, "=TRUE") != NULL) {
+                    fclose(fp);
+                    return 1;
+                }
+            }
+        }
+        fclose(fp);
+    }
+    
+    return 0;
 }
 
 /**

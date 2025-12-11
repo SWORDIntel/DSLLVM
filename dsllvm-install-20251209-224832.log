@@ -1,0 +1,121 @@
+[0;34m[INFO][0m Installation log: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251209-224832.log
+==========================================
+DSLLVM Installation Log
+Started: Tue  9 Dec 22:48:32 GMT 2025
+Command: ./install-dsllvm.sh 
+User: root
+System: Linux debian 6.17.9+deb14-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.17.9-1 (2025-11-26) x86_64 GNU/Linux
+==========================================
+
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Step: Prerequisites Check
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-09 22:48:32] [DEBUG] Details: 
+[2025-12-09 22:48:32] [DEBUG]   ✓ Found build-essential
+[2025-12-09 22:48:32] [DEBUG] Checking for required build tools...
+[2025-12-09 22:48:32] [DEBUG]   ✓ Found cmake: cmake version 3.31.6
+[2025-12-09 22:48:32] [DEBUG]   ✓ Found ninja: 1.13.2
+[2025-12-09 22:48:32] [DEBUG]   ✓ Found python3: Python 3.13.9
+[2025-12-09 22:48:32] [DEBUG]   ✓ Found git: git version 2.51.0
+[2025-12-09 22:48:32] [DEBUG]   ✓ Found sensors
+[2025-12-09 22:48:32] [DEBUG]   ✓ Found tmux
+[0;34m[INFO][0m All core build prerequisites met.
+[2025-12-09 22:48:32] [DEBUG] Checking CMake version...
+[2025-12-09 22:48:32] [DEBUG]   CMake version: 3.31.6
+[2025-12-09 22:48:32] [DEBUG] Checking disk space...
+[2025-12-09 22:48:32] [DEBUG]   Disk space: 159GB available
+[0;32m[SUCCESS][0m All prerequisites met
+[0;34m[INFO][0m Detected 9 P-cores. Setting build jobs to P-core count.
+[0;34m[INFO][0m   (Heuristic: Assumes P-cores are hyperthreaded, E-cores are not).
+[0;34m[INFO][0m   (Total logical CPUs - Total physical cores = P-cores)
+[0;34m[INFO][0m Using 9 parallel build jobs
+[2025-12-09 22:48:32] [DEBUG] Setting up build cache and resume support...
+[0;34m[INFO][0m Build caching enabled:
+[0;34m[INFO][0m   - Ninja dependency tracking: automatic resume support
+[0;34m[INFO][0m   - Build state preserved in: ./build/.ninja_deps
+[0;34m[INFO][0m   - Build log: ./build/.ninja_log
+[0;34m[INFO][0m 
+[0;34m[INFO][0m If build is interrupted, simply re-run this script to resume
+[0;34m[INFO][0m   (or run: ninja -C ./build -j9)
+[0;34m[INFO][0m No existing build detected - starting fresh build
+[0;34m[INFO][0m Checking for existing LLVM installation...
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Step: CMake Configuration
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-09 22:48:32] [DEBUG] Details: 
+[0;34m[INFO][0m Build type: Release
+[0;34m[INFO][0m Install prefix: /usr/local
+[0;34m[INFO][0m Build directory: ./build
+[0;34m[INFO][0m Log file: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251209-224832.log
+[0;34m[INFO][0m DSMIL Features to Enable:
+[0;34m[INFO][0m   ✓ All 20 DSMIL passes:
+[0;34m[INFO][0m     - BFT, BlueRed, ConstantTime, CrossDomain, EdgeSecurity
+[0;34m[INFO][0m     - FuzzCoverage, FuzzExport, JADC2, MPE, Metrics
+[0;34m[INFO][0m     - MissionPolicy, NuclearSurety, RadioBridge, Stealth
+[0;34m[INFO][0m     - Telecom, Telemetry, TelemetryCheck, ThreatSignature
+[0;34m[INFO][0m     - DSSSL: ApiMisuse, Coverage, CryptoMetrics
+[0;34m[INFO][0m   ✓ All 25+ DSMIL runtime libraries:
+[0;34m[INFO][0m     - Core: stealth, radio, nuclear, MPE, JADC2, edge_security, cross_domain, blue_red, bft
+[0;34m[INFO][0m     - Devices: device15_wycheproof, device255_crypto, device46_pqc, device47_crypto
+[0;34m[INFO][0m     - Layers: layer7_llm, layer8_security, layer8_security_crypto, layer9_executive
+[0;34m[INFO][0m     - Advanced: int8_quantization, quantum, mlops_optimization, mlops_crypto
+[0;34m[INFO][0m     - System: intelligence_flow, memory_budget, hil_orchestration, paths
+[0;34m[INFO][0m   ✓ Wycheproof integration (Device 15 crypto assurance)
+[0;34m[INFO][0m   ✓ TPM2 compatibility layer (88 cryptographic algorithms)
+[0;34m[INFO][0m   ✓ Device 255 master crypto controller
+[0;34m[INFO][0m   ✓ All Layer 7/8/9 runtime APIs
+[0;34m[INFO][0m 
+[2025-12-09 22:48:32] [DEBUG] Projects to build: clang;clang-tools-extra;lld;lldb;mlir;flang;compiler-rt;libcxx;libcxxabi;libunwind;openmp;polly;bolt
+[2025-12-09 22:48:32] [DEBUG] Targets to build: all
+[0;34m[INFO][0m Running CMake configuration (this may take a few minutes)...
+[2025-12-09 22:48:32] [DEBUG] CMake command: cmake -G Ninja -S /home/john/DSMILSystem/toolchains/DSLLVM/llvm -B ./build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra;lld;lldb;mlir;flang;compiler-rt;libcxx;libcxxabi;libunwind;openmp;polly;bolt -DLLVM_TARGETS_TO_BUILD=all -DLLVM_ENABLE_DSMIL=ON -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_TERMINFO=ON -DLLVM_ENABLE_ZLIB=ON -DLLVM_ENABLE_ZSTD=ON -DLLVM_INCLUDE_EXAMPLES=ON -DLLVM_INCLUDE_TESTS=ON -DLLVM_INCLUDE_BENCHMARKS=ON -DLLVM_BUILD_EXAMPLES=OFF -DLLVM_BUILD_TESTS=OFF -DLLVM_BUILD_BENCHMARKS=OFF -DLLVM_INSTALL_UTILS=ON -DLLVM_OPTIMIZED_TABLEGEN=ON -DLLVM_USE_SPLIT_DWARF=ON -DLLVM_ENABLE_BACKTRACES=ON -DLLVM_ENABLE_UNWIND_TABLES=ON -DLLVM_ENABLE_CRASH_OVERRIDES=ON -DLLVM_ENABLE_PIC=ON -DLLVM_ENABLE_PLUGINS=ON -DLLVM_ENABLE_BINDINGS=ON -DLLVM_ENABLE_OCAMLDOC=ON -DLLVM_ENABLE_Z3_SOLVER=OFF -DLLVM_ENABLE_LIBPFM=ON -DLLVM_ENABLE_LIBEDIT=ON -DLLVM_ENABLE_TERMINFO=ON -DLLVM_ENABLE_FFI=OFF -DBUILD_SHARED_LIBS=OFF
+[0;34m[INFO][0m Progress: Configuring build system...
+-- The C compiler identification is unknown
+-- The CXX compiler identification is unknown
+-- The ASM compiler identification is unknown
+-- Didn't find assembler
+CMake Error at CMakeLists.txt:46 (project):
+  The CMAKE_C_COMPILER:
+
+    clang
+
+  is not a full path and was not found in the PATH.
+
+  Tell CMake where to find the compiler by setting either the environment
+  variable "CC" or the CMake cache entry CMAKE_C_COMPILER to the full path to
+  the compiler, or to the compiler name if it is in the PATH.
+
+
+CMake Error at CMakeLists.txt:46 (project):
+  The CMAKE_CXX_COMPILER:
+
+    clang++
+
+  is not a full path and was not found in the PATH.
+
+  Tell CMake where to find the compiler by setting either the environment
+  variable "CXX" or the CMake cache entry CMAKE_CXX_COMPILER to the full path
+  to the compiler, or to the compiler name if it is in the PATH.
+
+
+CMake Error at CMakeLists.txt:46 (project):
+  No CMAKE_ASM_COMPILER could be found.
+
+  Tell CMake where to find the compiler by setting either the environment
+  variable "ASM" or the CMake cache entry CMAKE_ASM_COMPILER to the full path
+  to the compiler, or to the compiler name if it is in the PATH.
+
+
+-- Warning: Did not find file Compiler/-ASM
+-- Configuring incomplete, errors occurred!
+[0;31m[ERROR][0m CMake configuration failed with exit code 1
+[0;31m[ERROR][0m 
+[0;31m[ERROR][0m Full CMake output saved to: ./build/cmake-config.log
+[0;31m[ERROR][0m Check the log file for detailed error messages.
+[0;31m[ERROR][0m 
+[0;31m[ERROR][0m Common issues:
+[0;31m[ERROR][0m   - Missing dependencies: sudo apt-get install -y build-essential cmake ninja-build
+[0;31m[ERROR][0m   - Source directory issues: Ensure you're in the DSLLVM root directory
+[0;31m[ERROR][0m   - Permissions: Check write permissions for ./build
+[0;31m[ERROR][0m 
+[0;31m[ERROR][0m Full installation log: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251209-224832.log

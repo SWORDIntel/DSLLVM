@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/sysinfo.h>
 
 #define NPU_TOPS 13.0f
 #define GPU_TOPS 32.0f
@@ -21,6 +22,12 @@ static struct {
     float npu_utilization;
     float gpu_utilization;
     float cpu_utilization;
+    uint64_t npu_memory_used;
+    uint64_t gpu_memory_used;
+    uint64_t cpu_memory_used;
+    uint64_t npu_memory_total;
+    uint64_t gpu_memory_total;
+    uint64_t cpu_memory_total;
 } g_hil_state = {0};
 
 int dsmil_hil_init(void) {
@@ -31,6 +38,35 @@ int dsmil_hil_init(void) {
     g_hil_state.npu_utilization = 0.0f;
     g_hil_state.gpu_utilization = 0.0f;
     g_hil_state.cpu_utilization = 0.0f;
+    
+    /* Initialize memory tracking */
+    struct sysinfo si;
+    if (sysinfo(&si) == 0) {
+        /* Total system memory */
+        uint64_t total_mem = si.totalram * si.mem_unit;
+        
+        /* Estimate memory allocation per unit */
+        /* NPU: typically 4-8GB dedicated */
+        g_hil_state.npu_memory_total = 8ULL * 1024 * 1024 * 1024;  /* 8GB */
+        g_hil_state.npu_memory_used = 0;
+        
+        /* GPU: typically 16-32GB dedicated */
+        g_hil_state.gpu_memory_total = 32ULL * 1024 * 1024 * 1024;  /* 32GB */
+        g_hil_state.gpu_memory_used = 0;
+        
+        /* CPU: use system RAM */
+        g_hil_state.cpu_memory_total = total_mem;
+        g_hil_state.cpu_memory_used = (total_mem - si.freeram * si.mem_unit);
+    } else {
+        /* Fallback values if sysinfo fails */
+        g_hil_state.npu_memory_total = 8ULL * 1024 * 1024 * 1024;
+        g_hil_state.gpu_memory_total = 32ULL * 1024 * 1024 * 1024;
+        g_hil_state.cpu_memory_total = 64ULL * 1024 * 1024 * 1024;
+        g_hil_state.npu_memory_used = 0;
+        g_hil_state.gpu_memory_used = 0;
+        g_hil_state.cpu_memory_used = 0;
+    }
+    
     g_hil_state.initialized = true;
     
     return 0;
@@ -177,8 +213,26 @@ int dsmil_hil_get_unit_info(dsmil_hil_unit_t unit, dsmil_hil_unit_info_t *info) 
     }
     
     info->available = (info->tops_utilization < MAX_UTILIZATION);
-    info->memory_used_bytes = 0;  // Placeholder
-    info->memory_total_bytes = 0;  // Placeholder
+    
+    /* Set memory information */
+    switch (unit) {
+        case DSMIL_HIL_NPU:
+            info->memory_used_bytes = g_hil_state.npu_memory_used;
+            info->memory_total_bytes = g_hil_state.npu_memory_total;
+            break;
+        case DSMIL_HIL_GPU:
+            info->memory_used_bytes = g_hil_state.gpu_memory_used;
+            info->memory_total_bytes = g_hil_state.gpu_memory_total;
+            break;
+        case DSMIL_HIL_CPU:
+            info->memory_used_bytes = g_hil_state.cpu_memory_used;
+            info->memory_total_bytes = g_hil_state.cpu_memory_total;
+            break;
+        default:
+            info->memory_used_bytes = 0;
+            info->memory_total_bytes = 0;
+            break;
+    }
     
     return 0;
 }

@@ -54,8 +54,8 @@ private:
     Function* getApiMisuseFunction() {
         FunctionType *FTy = FunctionType::get(
             Type::getVoidTy(M->getContext()),
-            {PointerType::get(Type::getInt8Ty(M->getContext()), 0),  // api
-             PointerType::get(Type::getInt8Ty(M->getContext()), 0),  // reason
+            {PointerType::getUnqual(M->getContext()),  // api
+             PointerType::getUnqual(M->getContext()),  // reason
              Type::getInt64Ty(M->getContext())},          // context_id
             false);
 

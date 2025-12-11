@@ -383,7 +383,7 @@ private:
     FunctionCallee NetworkWrapperFunc = M->getOrInsertFunction(
         "dsmil_network_stealth_wrapper",
         Type::getVoidTy(Ctx),
-        PointerType::get(Type::getInt8Ty(Ctx), 0), // data
+        PointerType::getUnqual(Ctx), // data
         Type::getInt64Ty(Ctx)    // length
     );
 
@@ -428,7 +428,7 @@ private:
         DataLen = CI->getArgOperand(2);  // len/count
 
         // Cast data pointer to i8* for wrapper
-        auto *I8PtrTy = PointerType::get(Type::getInt8Ty(Ctx), 0);
+        auto *I8PtrTy = PointerType::getUnqual(Ctx);
         if (DataPtr->getType() != I8PtrTy) {
           DataPtr = Builder.CreateBitCast(DataPtr, I8PtrTy);
         }

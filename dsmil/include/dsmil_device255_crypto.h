@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "dsmil_tpm_algorithms.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,18 +76,6 @@ typedef enum {
 #define DSMIL_CRYPTO_CAP_ALL_ALGOS  0x03FF  /* Bits 0-9 */
 #define DSMIL_CRYPTO_CAP_ALL_HW     0xFC00  /* Bits 10-15 */
 #define DSMIL_CRYPTO_CAP_ALL        0xFFFF  /* All capabilities */
-
-/**
- * @brief Algorithm IDs (simplified - actual would use TPM_ALG_*)
- */
-#define TPM_ALG_SHA256    0x000B
-#define TPM_ALG_SHA384    0x000C
-#define TPM_ALG_SHA512    0x000D
-#define TPM_ALG_AES       0x0006
-#define TPM_ALG_RSA       0x0001
-#define TPM_ALG_ECDSA     0x0018
-#define TPM_ALG_ML_KEM_1024 0x0026  // Placeholder
-#define TPM_ALG_ML_DSA_87   0x0027  // Placeholder
 
 /**
  * @brief Device 255 capability registers

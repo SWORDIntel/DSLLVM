@@ -219,7 +219,7 @@ void DsmilBFTPass::insertBFTCall(Function *F, BFTUpdateType Type) {
             BFTFunc = M->getOrInsertFunction(
                 "dsmil_bft_send_status",
                 Type::getInt32Ty(Ctx),
-                PointerType::get(Type::getInt8Ty(Ctx), 0)
+                PointerType::getUnqual(Ctx)
             );
             break;
 
@@ -228,7 +228,7 @@ void DsmilBFTPass::insertBFTCall(Function *F, BFTUpdateType Type) {
             BFTFunc = M->getOrInsertFunction(
                 "dsmil_bft_send_friendly",
                 Type::getInt32Ty(Ctx),
-                PointerType::get(Type::getInt8Ty(Ctx), 0)
+                PointerType::getUnqual(Ctx)
             );
             break;
 

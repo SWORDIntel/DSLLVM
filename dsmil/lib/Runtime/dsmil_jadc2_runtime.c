@@ -15,6 +15,7 @@
  * SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -23,6 +24,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
 
 // JADC2 transport priorities
 #define JADC2_PRI_ROUTINE    0    // 0-63: Routine
@@ -58,6 +64,8 @@ static struct {
     char unit_id[64];
     uint8_t crypto_key[32];
 } g_jadc2_ctx = {0};
+
+static bool dsmil_jadc2_check_mec_availability(void);
 
 /**
  * @brief Initialize JADC2 transport layer
@@ -100,6 +108,16 @@ int dsmil_jadc2_init(const char *profile_name) {
     fflush(g_jadc2_ctx.transport_log);
 
     return 0;
+}
+
+static bool dsmil_jadc2_check_mec_availability(void) {
+    if (!g_jadc2_ctx.initialized) {
+        dsmil_jadc2_init("default");
+    }
+    /* Use environment flag as simplified availability signal */
+    const char *mec_enable = getenv("DSMIL_5G_MEC_ENABLE");
+    g_jadc2_ctx.mec_available = (mec_enable && strcmp(mec_enable, "1") == 0);
+    return g_jadc2_ctx.mec_available;
 }
 
 /**
@@ -147,10 +165,82 @@ int dsmil_jadc2_send(const void *data,
 
     g_jadc2_ctx.messages_sent++;
 
+    // Check if 5G/MEC node is available for transmission
+    if (!dsmil_jadc2_check_mec_availability()) {
+        fprintf(stderr, "WARNING: 5G/MEC node unavailable, message queued\n");
+        // In production, would queue message for retry
+        return -1;
+    }
+    
     // In production: actual network transmission via 5G/MEC
-    // For now: simulated
-    (void)data;  // Avoid unused warning
-
+    // For testing: check environment variable to simulate
+    const char *simulate_env = getenv("DSMIL_JADC2_SIMULATE");
+    if (simulate_env && strcmp(simulate_env, "1") == 0) {
+        // Simulated transmission for testing
+        (void)data;  // Avoid unused warning
+        return 0;
+    }
+    
+    // Production path: actual network transmission
+    // Get MEC endpoint from environment or use default
+    const char *mec_endpoint = getenv("DSMIL_MEC_ENDPOINT");
+    if (!mec_endpoint) {
+        mec_endpoint = "127.0.0.1";  // Default to localhost
+    }
+    
+    const char *mec_port_str = getenv("DSMIL_MEC_PORT");
+    int mec_port = mec_port_str ? atoi(mec_port_str) : 5000;  // Default port
+    
+    // Create UDP socket for JADC2 transmission (UDP for low latency)
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0) {
+        fprintf(stderr, "ERROR: Failed to create socket: %s\n", strerror(errno));
+        return -1;
+    }
+    
+    // Set socket to non-blocking for priority-based routing
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags >= 0) {
+        fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+    }
+    
+    // Set up destination address
+    struct sockaddr_in dest_addr;
+    memset(&dest_addr, 0, sizeof(dest_addr));
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(mec_port);
+    
+    if (inet_aton(mec_endpoint, &dest_addr.sin_addr) == 0) {
+        fprintf(stderr, "ERROR: Invalid MEC endpoint: %s\n", mec_endpoint);
+        close(sockfd);
+        return -1;
+    }
+    
+    // Send message with priority-based routing
+    ssize_t sent = sendto(sockfd, data, length, 0,
+                         (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+    
+    if (sent < 0) {
+        if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            fprintf(stderr, "WARNING: Transmission failed: %s (message queued)\n",
+                    strerror(errno));
+        }
+        close(sockfd);
+        // In production, would queue message for retry
+        return -1;
+    }
+    
+    if (sent != (ssize_t)length) {
+        fprintf(stderr, "WARNING: Partial transmission: %zd/%zu bytes\n", sent, length);
+    }
+    
+    close(sockfd);
+    
+    fprintf(g_jadc2_ctx.transport_log,
+            "[TRANSMITTED] endpoint=%s:%d bytes=%zd priority=%d\n",
+            mec_endpoint, mec_port, sent, priority);
+    fflush(g_jadc2_ctx.transport_log);
+    
     return 0;
 }
 

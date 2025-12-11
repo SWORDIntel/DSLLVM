@@ -22,6 +22,8 @@
 #include "llvm/IR/DebugInfo.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/DerivedTypes.h"
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/CommandLine.h"
@@ -57,7 +59,7 @@ static cl::opt<std::string> MissionProfile(
     cl::desc("Mission profile name"),
     cl::init(""));
 
-static cl::opt<std::string> TelemetryLevel(
+static cl::opt<std::string> TelemetryLevelOpt(
     "dsmil-telemetry-level",
     cl::desc("Telemetry instrumentation level: off, min, normal, debug, trace"),
     cl::init("normal"));
@@ -294,8 +296,8 @@ private:
         }
         
         // Fall back to command-line option
-        if (!TelemetryLevel.getValue().empty()) {
-            return parseTelemetryLevel(TelemetryLevel.getValue());
+        if (!TelemetryLevelOpt.getValue().empty()) {
+            return parseTelemetryLevel(TelemetryLevelOpt.getValue());
         }
         
         return LEVEL_NORMAL;  // Default
@@ -690,7 +692,6 @@ private:
 
         // Initialize event structure fields
         Value *Zero32 = ConstantInt::get(Type::getInt32Ty(Ctx), 0);
-        Value *Zero8 = ConstantInt::get(Type::getInt8Ty(Ctx), 0);
         Value *Zero64 = ConstantInt::get(Type::getInt64Ty(Ctx), 0);
         Value *EventTypeVal = ConstantInt::get(Type::getInt32Ty(Ctx), EventType);
         Value *LineVal = ConstantInt::get(Type::getInt32Ty(Ctx), MD.line);
@@ -737,7 +738,7 @@ private:
     Value* getCycleCounter(IRBuilder<> &Builder) {
         LLVMContext &Ctx = M->getContext();
         // Use llvm.readcyclecounter intrinsic
-        Function *ReadCycleCounter = Intrinsic::getDeclaration(
+        Function *ReadCycleCounter = Intrinsic::getOrInsertDeclaration(
             M, Intrinsic::readcyclecounter);
         CallInst *CycleCounter = Builder.CreateCall(ReadCycleCounter);
         return CycleCounter;

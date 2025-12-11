@@ -33,6 +33,16 @@
 #include <time.h>
 #include <math.h>
 
+/* OpenSSL/BoringSSL for AES-256-GCM */
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
+
+/* liboqs for quantum-safe ML-DSA-87 signatures */
+#include <oqs/oqs.h>
+
+#define MLDSA87_SIGNATURE_BYTES 4595
+
 // BFT update types
 typedef enum {
     DSMIL_BFT_POSITION = 0,
@@ -109,24 +119,38 @@ int dsmil_bft_init(const char *unit_id, const char *crypto_key) {
     // Set unit ID
     snprintf(g_bft_ctx.unit_id, sizeof(g_bft_ctx.unit_id), "%s", unit_id);
 
-    // Initialize crypto keys
+    // Initialize crypto keys with proper random generation
     if (crypto_key) {
         memcpy(g_bft_ctx.aes_key, crypto_key, 32);
     } else {
-        // Generate random key (production would use proper key management)
-        for (int i = 0; i < 32; i++) {
-            g_bft_ctx.aes_key[i] = (uint8_t)(rand() & 0xFF);
+        // Use OpenSSL RAND for cryptographically secure random key
+        if (1 != RAND_bytes(g_bft_ctx.aes_key, 32)) {
+            fprintf(stderr, "ERROR: Failed to generate random AES key\n");
+            return -1;
         }
     }
 
-    // Initialize GCM IV
-    for (int i = 0; i < 12; i++) {
-        g_bft_ctx.gcm_iv[i] = (uint8_t)(rand() & 0xFF);
+    // Initialize GCM IV with cryptographically secure random
+    if (1 != RAND_bytes(g_bft_ctx.gcm_iv, 12)) {
+        fprintf(stderr, "ERROR: Failed to generate random GCM IV\n");
+        return -1;
     }
 
-    // Initialize ML-DSA-87 keypair (production would use proper key generation)
-    memset(g_bft_ctx.mldsa_private_key, 0xAA, sizeof(g_bft_ctx.mldsa_private_key));
-    memset(g_bft_ctx.mldsa_public_key, 0xBB, sizeof(g_bft_ctx.mldsa_public_key));
+    /* Initialize ML-DSA-87 keypair using FIPS 204 quantum-safe key generation */
+    OQS_SIG *sig = OQS_SIG_new(OQS_SIG_alg_ml_dsa_87);
+    if (!sig) {
+        fprintf(stderr, "ERROR: Failed to create ML-DSA-87 signer for key generation\n");
+        return -1;
+    }
+
+    /* Generate ML-DSA-87 keypair */
+    if (OQS_SIG_keypair(sig, g_bft_ctx.mldsa_public_key, g_bft_ctx.mldsa_private_key) != OQS_SUCCESS) {
+        fprintf(stderr, "ERROR: ML-DSA-87 key generation failed\n");
+        OQS_SIG_free(sig);
+        return -1;
+    }
+
+    OQS_SIG_free(sig);
 
     // Open BFT log
     const char *log_path = getenv("DSMIL_BFT_LOG");
@@ -168,63 +192,202 @@ int dsmil_bft_init(const char *unit_id, const char *crypto_key) {
  *
  * @param plaintext Plaintext data
  * @param plaintext_len Length of plaintext
- * @param ciphertext Output ciphertext buffer
+ * @param ciphertext Output ciphertext buffer (must be at least plaintext_len + 16)
  * @param tag Output GCM authentication tag (16 bytes)
- * @return 0 on success, negative on error
+ * @return bytes encrypted on success, negative on error
  */
 static int bft_encrypt_aes256_gcm(const uint8_t *plaintext, size_t plaintext_len,
                                    uint8_t *ciphertext, uint8_t *tag) {
-    // Production implementation would use actual AES-256-GCM
-    // For now: simplified XOR "encryption" for demonstration
-    for (size_t i = 0; i < plaintext_len; i++) {
-        ciphertext[i] = plaintext[i] ^ g_bft_ctx.aes_key[i % 32];
+    EVP_CIPHER_CTX *ctx = NULL;
+    int len = 0;
+    int ciphertext_len = 0;
+    int ret = -1;
+
+    /* Create and initialize context */
+    ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_ENCRYPT_ERROR] Failed to create cipher context\n");
+        goto cleanup;
     }
 
-    // Generate GCM tag (simplified)
-    memset(tag, 0xCC, 16);
+    /* Initialize encryption with AES-256-GCM */
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, g_bft_ctx.aes_key, g_bft_ctx.gcm_iv)) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_ENCRYPT_ERROR] Failed to initialize encryption\n");
+        goto cleanup;
+    }
 
-    return 0;
+    /* Provide the message to be encrypted */
+    if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, (int)plaintext_len)) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_ENCRYPT_ERROR] Encryption failed\n");
+        goto cleanup;
+    }
+    ciphertext_len = len;
+
+    /* Finalize encryption */
+    if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_ENCRYPT_ERROR] Finalization failed\n");
+        goto cleanup;
+    }
+    ciphertext_len += len;
+
+    /* Get the GCM authentication tag */
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag)) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_ENCRYPT_ERROR] Failed to get GCM tag\n");
+        goto cleanup;
+    }
+
+    ret = ciphertext_len;
+
+cleanup:
+    if (ctx) {
+        EVP_CIPHER_CTX_free(ctx);
+    }
+
+    return ret;
 }
 
 /**
- * @brief Sign BFT message with ML-DSA-87
+ * @brief Decrypt BFT message with AES-256-GCM
+ *
+ * @param ciphertext Ciphertext data
+ * @param ciphertext_len Length of ciphertext (not including tag)
+ * @param tag GCM authentication tag (16 bytes)
+ * @param plaintext Output plaintext buffer
+ * @return bytes decrypted on success, negative on error
+ */
+static int bft_decrypt_aes256_gcm(const uint8_t *ciphertext, size_t ciphertext_len,
+                                   const uint8_t *tag, uint8_t *plaintext) {
+    EVP_CIPHER_CTX *ctx = NULL;
+    int len = 0;
+    int plaintext_len = 0;
+    int ret = -1;
+
+    /* Create and initialize context */
+    ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_DECRYPT_ERROR] Failed to create cipher context\n");
+        goto cleanup;
+    }
+
+    /* Initialize decryption with AES-256-GCM */
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, g_bft_ctx.aes_key, g_bft_ctx.gcm_iv)) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_DECRYPT_ERROR] Failed to initialize decryption\n");
+        goto cleanup;
+    }
+
+    /* Set the GCM authentication tag for verification */
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, (void*)tag)) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_DECRYPT_ERROR] Failed to set GCM tag\n");
+        goto cleanup;
+    }
+
+    /* Provide the message to be decrypted */
+    if (1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, (int)ciphertext_len)) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_DECRYPT_ERROR] Decryption failed\n");
+        goto cleanup;
+    }
+    plaintext_len = len;
+
+    /* Finalize decryption and verify tag */
+    if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_DECRYPT_ERROR] Authentication failed - tag verification failed\n");
+        goto cleanup;
+    }
+    plaintext_len += len;
+
+    ret = plaintext_len;
+
+cleanup:
+    if (ctx) {
+        EVP_CIPHER_CTX_free(ctx);
+    }
+
+    return ret;
+}
+
+/**
+ * @brief Sign BFT message with ML-DSA-87 (FIPS 204 quantum-safe signature)
  *
  * @param message Message to sign
  * @param message_len Message length
  * @param signature Output signature buffer (4595 bytes for ML-DSA-87)
- * @return 0 on success, negative on error
+ * @return bytes signed on success, negative on error
  */
 static int bft_sign_mldsa87(const uint8_t *message, size_t message_len,
                              uint8_t *signature) {
-    // Production implementation would use actual ML-DSA-87
-    // For now: simplified signature for demonstration
-    memset(signature, 0xDD, 4595);
-    (void)message;
-    (void)message_len;
+    OQS_SIG *sig = NULL;
+    int ret = -1;
 
-    return 0;
+    /* Create ML-DSA-87 signer context */
+    sig = OQS_SIG_new(OQS_SIG_alg_ml_dsa_87);
+    if (!sig) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_SIGN_ERROR] Failed to create ML-DSA-87 signer\n");
+        goto cleanup;
+    }
+
+    /* Use private key from global context */
+    if (OQS_SIG_sign(sig, signature, (size_t *)&ret,
+                     message, message_len,
+                     g_bft_ctx.mldsa_private_key) != OQS_SUCCESS) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_SIGN_ERROR] ML-DSA-87 signature generation failed\n");
+        ret = -1;
+        goto cleanup;
+    }
+
+    /* ret now contains the signature length (should be 4595 for ML-DSA-87) */
+
+cleanup:
+    if (sig) {
+        OQS_SIG_free(sig);
+    }
+
+    return ret;
 }
 
 /**
- * @brief Verify ML-DSA-87 signature
+ * @brief Verify ML-DSA-87 signature (FIPS 204 quantum-safe verification)
  *
  * @param message Message that was signed
  * @param message_len Message length
  * @param signature Signature to verify (4595 bytes)
+ * @param signature_len Length of signature
  * @param public_key Signer's ML-DSA-87 public key (2592 bytes)
  * @return true if valid, false if invalid
  */
 static bool bft_verify_mldsa87(const uint8_t *message, size_t message_len,
-                                const uint8_t *signature,
+                                const uint8_t *signature, size_t signature_len,
                                 const uint8_t *public_key) {
-    // Production implementation would use actual ML-DSA-87 verification
-    // For now: always accept (demonstration only)
-    (void)message;
-    (void)message_len;
-    (void)signature;
-    (void)public_key;
+    OQS_SIG *sig = NULL;
+    bool is_valid = false;
 
-    return true;
+    /* Validate signature size */
+    if (signature_len != MLDSA87_SIGNATURE_BYTES) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_VERIFY] Invalid signature length: %zu (expected %zu)\n",
+                signature_len, (size_t)MLDSA87_SIGNATURE_BYTES);
+        return false;
+    }
+
+    /* Create ML-DSA-87 verifier context */
+    sig = OQS_SIG_new(OQS_SIG_alg_ml_dsa_87);
+    if (!sig) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_VERIFY_ERROR] Failed to create ML-DSA-87 verifier\n");
+        goto cleanup;
+    }
+
+    /* Verify signature using public key */
+    if (OQS_SIG_verify(sig, message, message_len, signature, signature_len, public_key) == OQS_SUCCESS) {
+        is_valid = true;
+    } else {
+        fprintf(g_bft_ctx.bft_log, "[BFT_VERIFY] ML-DSA-87 signature verification failed\n");
+        is_valid = false;
+    }
+
+cleanup:
+    if (sig) {
+        OQS_SIG_free(sig);
+    }
+
+    return is_valid;
 }
 
 /**
@@ -253,39 +416,58 @@ int dsmil_bft_send_position(double lat, double lon, double alt,
         }
     }
 
-    // Build position message
+    /* Build position message */
     char plaintext[512];
     snprintf(plaintext, sizeof(plaintext),
              "BFT_POS|%s|%.6f|%.6f|%.1f|%lu",
              g_bft_ctx.unit_id, lat, lon, alt, timestamp_ns);
 
-    // Encrypt with AES-256-GCM
-    uint8_t ciphertext[512];
+    size_t plaintext_len = strlen(plaintext);
+
+    /* Encrypt with AES-256-GCM */
+    uint8_t ciphertext[512 + 16];  /* Add space for GCM tag */
     uint8_t gcm_tag[16];
-    bft_encrypt_aes256_gcm((const uint8_t*)plaintext, strlen(plaintext),
-                           ciphertext, gcm_tag);
+    int encrypted_len = bft_encrypt_aes256_gcm((const uint8_t*)plaintext, plaintext_len,
+                                               ciphertext, gcm_tag);
 
-    // Sign with ML-DSA-87
+    if (encrypted_len < 0) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_POS_TX_ERROR] Encryption failed\n");
+        fflush(g_bft_ctx.bft_log);
+        return -1;
+    }
+
+    /* Append GCM tag to ciphertext for transmission */
+    memcpy(ciphertext + encrypted_len, gcm_tag, 16);
+    size_t total_message_len = encrypted_len + 16;
+
+    /* Sign with ML-DSA-87 */
     uint8_t signature[4595];
-    bft_sign_mldsa87((const uint8_t*)plaintext, strlen(plaintext), signature);
+    int signature_len = bft_sign_mldsa87(ciphertext, total_message_len, signature);
 
-    // Log transmission
+    if (signature_len < 0) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_POS_TX_ERROR] Signature generation failed\n");
+        fflush(g_bft_ctx.bft_log);
+        return -1;
+    }
+
+    /* Log transmission */
     fprintf(g_bft_ctx.bft_log,
-            "[BFT_POS_TX] unit=%s lat=%.6f lon=%.6f alt=%.1f ts=%lu encrypted=AES256-GCM signed=ML-DSA-87\n",
-            g_bft_ctx.unit_id, lat, lon, alt, timestamp_ns);
+            "[BFT_POS_TX] unit=%s lat=%.6f lon=%.6f alt=%.1f ts=%lu encrypted=AES256-GCM(%zu bytes) signed=ML-DSA-87(%d bytes)\n",
+            g_bft_ctx.unit_id, lat, lon, alt, timestamp_ns, total_message_len, signature_len);
     fflush(g_bft_ctx.bft_log);
 
-    // Update state
+    /* Update state */
     g_bft_ctx.last_lat = lat;
     g_bft_ctx.last_lon = lon;
     g_bft_ctx.last_alt = alt;
     g_bft_ctx.last_position_update_ns = timestamp_ns;
     g_bft_ctx.positions_sent++;
 
-    // In production: transmit encrypted message via BFT-2 protocol
-    (void)ciphertext;
-    (void)gcm_tag;
-    (void)signature;
+    /* In production: transmit encrypted message via BFT-2 protocol
+       Message would be: [ciphertext(encrypted_len bytes) + tag(16 bytes) + signature(4595 bytes)]
+     */
+    (void)ciphertext;  /* Would be transmitted */
+    (void)signature;   /* Would be transmitted */
 
     return 0;
 }
@@ -352,16 +534,30 @@ int dsmil_bft_recv_position(const uint8_t *encrypted_message, size_t message_len
         dsmil_bft_init("UNKNOWN", NULL);
     }
 
-    // Decrypt message (simplified)
-    uint8_t plaintext[512];
-    for (size_t i = 0; i < message_len && i < sizeof(plaintext); i++) {
-        plaintext[i] = encrypted_message[i] ^ g_bft_ctx.aes_key[i % 32];
+    /* Extract tag from end of encrypted message (last 16 bytes) */
+    if (message_len < 16) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_RECV_ERROR] Message too short to contain GCM tag\n");
+        return -1;
     }
-    plaintext[message_len < sizeof(plaintext) ? message_len : sizeof(plaintext)-1] = '\0';
 
-    // Verify ML-DSA-87 signature
-    bool signature_valid = bft_verify_mldsa87(plaintext, message_len,
-                                               signature, sender_public_key);
+    const uint8_t *tag = encrypted_message + message_len - 16;
+    size_t ciphertext_len = message_len - 16;
+
+    /* Decrypt message with AES-256-GCM */
+    uint8_t plaintext[512];
+    int decrypted_len = bft_decrypt_aes256_gcm(encrypted_message, ciphertext_len, tag, plaintext);
+    
+    if (decrypted_len < 0) {
+        fprintf(g_bft_ctx.bft_log, "[BFT_RECV_ERROR] Decryption or authentication failed\n");
+        return -1;
+    }
+
+    /* Null terminate plaintext */
+    plaintext[decrypted_len < (int)sizeof(plaintext) ? decrypted_len : sizeof(plaintext)-1] = '\0';
+
+    /* Verify ML-DSA-87 signature (4595 bytes for ML-DSA-87) */
+    bool signature_valid = bft_verify_mldsa87(plaintext, decrypted_len,
+                                               signature, 4595, sender_public_key);
 
     if (!signature_valid) {
         g_bft_ctx.spoofing_attempts_detected++;

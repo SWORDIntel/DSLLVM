@@ -31,6 +31,9 @@
 #include <stdbool.h>
 #include <time.h>
 
+/* liboqs for ML-DSA-87 quantum-safe signatures (FIPS 204) */
+#include <oqs/oqs.h>
+
 // ML-DSA-87 constants (FIPS 204)
 #define MLDSA87_PUBLIC_KEY_BYTES 2592
 #define MLDSA87_SECRET_KEY_BYTES 4896
@@ -146,9 +149,9 @@ int dsmil_nuclear_surety_init(const char *officer1_id,
 }
 
 /**
- * @brief Verify ML-DSA-87 signature (simplified for demonstration)
+ * @brief Verify ML-DSA-87 signature using liboqs (FIPS 204)
  *
- * Production implementation would use actual FIPS 204 ML-DSA-87 verification.
+ * Production implementation using actual FIPS 204 ML-DSA-87 verification.
  *
  * @param message Message that was signed
  * @param message_len Message length
@@ -159,17 +162,50 @@ int dsmil_nuclear_surety_init(const char *officer1_id,
 static bool verify_mldsa87_signature(const uint8_t *message, size_t message_len,
                                       const uint8_t *signature,
                                       const uint8_t *public_key) {
-    // Production: use actual ML-DSA-87 verification from FIPS 204
-    // For demonstration: simplified check
-    (void)message;
-    (void)message_len;
-    (void)signature;
-    (void)public_key;
+    // Initialize liboqs
+    OQS_init();
 
-    // Simulate verification delay (crypto is slow)
-    // usleep(10000);  // 10ms
+    // Get ML-DSA-87 signature scheme
+    OQS_SIG *sig = OQS_SIG_new(OQS_SIG_alg_ml_dsa_87);
+    if (!sig) {
+        fprintf(stderr, "ERROR: ML-DSA-87 not available in liboqs\n");
+        return false;
+    }
 
-    return true;  // Always accept for demonstration
+    // Verify signature length
+    if (sig->length_signature != MLDSA87_SIGNATURE_BYTES) {
+        fprintf(stderr, "ERROR: Invalid signature length (expected %zu, got %zu)\n",
+                (size_t)MLDSA87_SIGNATURE_BYTES, sig->length_signature);
+        OQS_SIG_free(sig);
+        return false;
+    }
+
+    // Verify public key length
+    if (sig->length_public_key != MLDSA87_PUBLIC_KEY_BYTES) {
+        fprintf(stderr, "ERROR: Invalid public key length (expected %zu, got %zu)\n",
+                (size_t)MLDSA87_PUBLIC_KEY_BYTES, sig->length_public_key);
+        OQS_SIG_free(sig);
+        return false;
+    }
+
+    // Perform ML-DSA-87 signature verification
+    OQS_STATUS status = OQS_SIG_verify(sig,
+                                       message, message_len,
+                                       signature, MLDSA87_SIGNATURE_BYTES,
+                                       public_key);
+
+    bool valid = (status == OQS_SUCCESS);
+
+    // Cleanup
+    OQS_SIG_free(sig);
+
+    if (!valid) {
+        fprintf(g_nc3_ctx.audit_log,
+                "[MLDSA87_VERIFY] Signature verification FAILED\n");
+        fflush(g_nc3_ctx.audit_log);
+    }
+
+    return valid;
 }
 
 /**

@@ -9,6 +9,11 @@ add_library(dsmil_config STATIC
 target_include_directories(dsmil_config PUBLIC
   ${LLVM_MAIN_SRC_DIR}/../dsmil/include
 )
+
+# Link OpenSSL for certificate validation
+find_package(OpenSSL REQUIRED)
+target_link_libraries(dsmil_config PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+
 install(TARGETS dsmil_config
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )

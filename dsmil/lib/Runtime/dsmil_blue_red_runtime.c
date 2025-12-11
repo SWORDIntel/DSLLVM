@@ -10,6 +10,7 @@
  * SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +32,17 @@ static char g_active_scenarios[256] = {0};
  * Red team log file
  */
 static FILE *g_red_log_file = NULL;
+
+/**
+ * Statistics tracking
+ */
+static struct {
+    unsigned red_hooks_triggered;
+    unsigned scenarios_activated;
+    unsigned attack_surfaces_hit;
+    unsigned scenario_enable_count;
+    unsigned scenario_disable_count;
+} g_red_stats = {0};
 
 /**
  * Initialize blue/red runtime
@@ -115,6 +127,9 @@ void dsmil_red_log(const char *hook_name, const char *function_name) {
     if (!g_is_red_build || !g_red_log_file)
         return;
 
+    /* Update statistics */
+    g_red_stats.red_hooks_triggered++;
+
     time_t now = time(NULL);
     fprintf(g_red_log_file, "[%ld] RED_HOOK: %s in %s\n",
             (long)now, hook_name, function_name);
@@ -188,6 +203,9 @@ int dsmil_red_scenario(const char *scenario_name) {
         if (strcmp(token, scenario_name) == 0) {
             free(scenarios_copy);
 
+            /* Update statistics */
+            g_red_stats.scenarios_activated++;
+
             if (g_red_log_file) {
                 fprintf(g_red_log_file, "[%ld] SCENARIO_ACTIVE: %s\n",
                         (long)time(NULL), scenario_name);
@@ -218,6 +236,9 @@ void dsmil_red_attack_surface_entry(const char *function_name,
                                     size_t data_size) {
     if (!g_is_red_build || !g_red_log_file)
         return;
+
+    /* Update statistics */
+    g_red_stats.attack_surfaces_hit++;
 
     fprintf(g_red_log_file, "[%ld] ATTACK_SURFACE: %s (data_size=%zu)\n",
             (long)time(NULL), function_name, data_size);
@@ -271,12 +292,16 @@ void dsmil_red_blast_radius_event(const char *function_name,
 int dsmil_red_get_stats(unsigned *red_hooks_triggered,
                         unsigned *scenarios_activated,
                         unsigned *attack_surfaces_hit) {
-    // TODO: Implement statistics tracking
-    // For now, return zeros
+    if (!g_is_red_build) {
+        if (red_hooks_triggered) *red_hooks_triggered = 0;
+        if (scenarios_activated) *scenarios_activated = 0;
+        if (attack_surfaces_hit) *attack_surfaces_hit = 0;
+        return 0;
+    }
 
-    if (red_hooks_triggered) *red_hooks_triggered = 0;
-    if (scenarios_activated) *scenarios_activated = 0;
-    if (attack_surfaces_hit) *attack_surfaces_hit = 0;
+    if (red_hooks_triggered) *red_hooks_triggered = g_red_stats.red_hooks_triggered;
+    if (scenarios_activated) *scenarios_activated = g_red_stats.scenarios_activated;
+    if (attack_surfaces_hit) *attack_surfaces_hit = g_red_stats.attack_surfaces_hit;
 
     return 0;
 }
@@ -292,13 +317,82 @@ int dsmil_red_set_scenario(const char *scenario_name, int enabled) {
     if (!g_is_red_build)
         return -1;
 
-    // TODO: Implement dynamic scenario control
-    // For now, just log the request
+    if (!scenario_name)
+        return -1;
+
+    /* Update statistics */
+    if (enabled) {
+        g_red_stats.scenario_enable_count++;
+    } else {
+        g_red_stats.scenario_disable_count++;
+    }
+
+    /* Check if scenario is already in the list */
+    char *scenarios_copy = strdup(g_active_scenarios);
+    char *token = strtok(scenarios_copy, ",");
+    int found = 0;
+
+    while (token != NULL) {
+        /* Trim whitespace */
+        while (*token == ' ') token++;
+        char *end = token + strlen(token) - 1;
+        while (end > token && *end == ' ') end--;
+        *(end + 1) = '\0';
+
+        if (strcmp(token, scenario_name) == 0) {
+            found = 1;
+            break;
+        }
+
+        token = strtok(NULL, ",");
+    }
+
+    free(scenarios_copy);
+
+    /* Add or remove scenario from active list */
+    if (enabled && !found) {
+        /* Add scenario */
+        size_t current_len = strlen(g_active_scenarios);
+        if (current_len > 0) {
+            strncat(g_active_scenarios, ",", sizeof(g_active_scenarios) - current_len - 1);
+            current_len++;
+        }
+        strncat(g_active_scenarios, scenario_name, sizeof(g_active_scenarios) - current_len - 1);
+    } else if (!enabled && found) {
+        /* Remove scenario from list */
+        char new_scenarios[256] = {0};
+        scenarios_copy = strdup(g_active_scenarios);
+        token = strtok(scenarios_copy, ",");
+        int first = 1;
+
+        while (token != NULL) {
+            /* Trim whitespace */
+            while (*token == ' ') token++;
+            char *end = token + strlen(token) - 1;
+            while (end > token && *end == ' ') end--;
+            *(end + 1) = '\0';
+
+            if (strcmp(token, scenario_name) != 0) {
+                if (!first) {
+                    strncat(new_scenarios, ",", sizeof(new_scenarios) - strlen(new_scenarios) - 1);
+                }
+                strncat(new_scenarios, token, sizeof(new_scenarios) - strlen(new_scenarios) - 1);
+                first = 0;
+            }
+
+            token = strtok(NULL, ",");
+        }
+
+        free(scenarios_copy);
+        strncpy(g_active_scenarios, new_scenarios, sizeof(g_active_scenarios) - 1);
+        g_active_scenarios[sizeof(g_active_scenarios) - 1] = '\0';
+    }
 
     if (g_red_log_file) {
-        fprintf(g_red_log_file, "[%ld] SET_SCENARIO: %s = %s\n",
+        fprintf(g_red_log_file, "[%ld] SET_SCENARIO: %s = %s (active: %s)\n",
                 (long)time(NULL), scenario_name,
-                enabled ? "enabled" : "disabled");
+                enabled ? "enabled" : "disabled",
+                g_active_scenarios[0] ? g_active_scenarios : "(none)");
         fflush(g_red_log_file);
     }
 

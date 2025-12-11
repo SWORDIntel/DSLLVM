@@ -28,6 +28,9 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/JSON.h"
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include "llvm/Support/raw_ostream.h"
 #include <map>
 #include <string>
@@ -266,7 +269,11 @@ private:
     Root["schema"] = "dsmil-fuzz-v1";
     Root["version"] = "1.3.0";
     Root["binary"] = M.getName().str();
-    Root["generated_at"] = "2026-01-15T14:30:00Z";  // TODO: Real timestamp
+    // Generate real timestamp in ISO 8601 format
+    auto now = std::time(nullptr);
+    std::ostringstream oss;
+    oss << std::put_time(std::gmtime(&now), "%Y-%m-%dT%H:%M:%SZ");
+    Root["generated_at"] = oss.str();
 
     // Fuzz targets array
     json::Array TargetsArray;

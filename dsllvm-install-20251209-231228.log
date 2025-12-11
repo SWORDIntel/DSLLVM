@@ -1,0 +1,633 @@
+[0;34m[INFO][0m Installation log: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251209-231228.log
+==========================================
+DSLLVM Installation Log
+Started: Tue  9 Dec 23:12:28 GMT 2025
+Command: ./install-dsllvm.sh 
+User: root
+System: Linux debian 6.17.9+deb14-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.17.9-1 (2025-11-26) x86_64 GNU/Linux
+==========================================
+
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Step: Prerequisites Check
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-09 23:12:28] [DEBUG] Details: 
+[2025-12-09 23:12:28] [DEBUG]   ✓ Found build-essential
+[2025-12-09 23:12:28] [DEBUG] Checking for required build tools...
+[2025-12-09 23:12:28] [DEBUG]   ✓ Found cmake: cmake version 3.31.6
+[2025-12-09 23:12:28] [DEBUG]   ✓ Found ninja: 1.13.2
+[2025-12-09 23:12:28] [DEBUG]   ✓ Found python3: Python 3.13.9
+[2025-12-09 23:12:28] [DEBUG]   ✓ Found git: git version 2.51.0
+[2025-12-09 23:12:28] [DEBUG]   ✓ Found sensors
+[2025-12-09 23:12:28] [DEBUG]   ✓ Found tmux
+[0;34m[INFO][0m All core build prerequisites met.
+[2025-12-09 23:12:28] [DEBUG] Checking CMake version...
+[2025-12-09 23:12:28] [DEBUG]   CMake version: 3.31.6
+[2025-12-09 23:12:28] [DEBUG] Checking disk space...
+[2025-12-09 23:12:28] [DEBUG]   Disk space: 156GB available
+[0;32m[SUCCESS][0m All prerequisites met
+[0;34m[INFO][0m Detected 9 P-cores. Setting build jobs to P-core count.
+[0;34m[INFO][0m   (Heuristic: Assumes P-cores are hyperthreaded, E-cores are not).
+[0;34m[INFO][0m   (Total logical CPUs - Total physical cores = P-cores)
+[0;34m[INFO][0m Using 9 parallel build jobs
+[2025-12-09 23:12:28] [DEBUG] Setting up build cache and resume support...
+[0;34m[INFO][0m Build caching enabled:
+[0;34m[INFO][0m   - Ninja dependency tracking: automatic resume support
+[0;34m[INFO][0m   - Build state preserved in: ./build/.ninja_deps
+[0;34m[INFO][0m   - Build log: ./build/.ninja_log
+[0;34m[INFO][0m 
+[0;34m[INFO][0m If build is interrupted, simply re-run this script to resume
+[0;34m[INFO][0m   (or run: ninja -C ./build -j9)
+[0;34m[INFO][0m Existing build detected in ./build
+[0;34m[INFO][0m Build can be resumed - Ninja will continue from last state
+[0;34m[INFO][0m   - Build state: 318M
+[0;34m[INFO][0m   - To clean and start fresh: use --clean
+[0;34m[INFO][0m   - To resume: build will automatically continue
+[0;34m[INFO][0m Remaining work detected - build will resume
+[0;34m[INFO][0m Checking for existing LLVM installation...
+[0;34m[INFO][0m Backing up existing LLVM installation to /opt/llvm-backup-20251209-231233
+[0;32m[SUCCESS][0m Backup created at /opt/llvm-backup-20251209-231233
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Step: CMake Configuration
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-09 23:12:46] [DEBUG] Details: 
+[0;34m[INFO][0m Build type: Release
+[0;34m[INFO][0m Install prefix: /usr/local
+[0;34m[INFO][0m Build directory: ./build
+[0;34m[INFO][0m Log file: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251209-231228.log
+[0;34m[INFO][0m DSMIL Features to Enable:
+[0;34m[INFO][0m   ✓ All 20 DSMIL passes:
+[0;34m[INFO][0m     - BFT, BlueRed, ConstantTime, CrossDomain, EdgeSecurity
+[0;34m[INFO][0m     - FuzzCoverage, FuzzExport, JADC2, MPE, Metrics
+[0;34m[INFO][0m     - MissionPolicy, NuclearSurety, RadioBridge, Stealth
+[0;34m[INFO][0m     - Telecom, Telemetry, TelemetryCheck, ThreatSignature
+[0;34m[INFO][0m     - DSSSL: ApiMisuse, Coverage, CryptoMetrics
+[0;34m[INFO][0m   ✓ All 25+ DSMIL runtime libraries:
+[0;34m[INFO][0m     - Core: stealth, radio, nuclear, MPE, JADC2, edge_security, cross_domain, blue_red, bft
+[0;34m[INFO][0m     - Devices: device15_wycheproof, device255_crypto, device46_pqc, device47_crypto
+[0;34m[INFO][0m     - Layers: layer7_llm, layer8_security, layer8_security_crypto, layer9_executive
+[0;34m[INFO][0m     - Advanced: int8_quantization, quantum, mlops_optimization, mlops_crypto
+[0;34m[INFO][0m     - System: intelligence_flow, memory_budget, hil_orchestration, paths
+[0;34m[INFO][0m   ✓ Wycheproof integration (Device 15 crypto assurance)
+[0;34m[INFO][0m   ✓ TPM2 compatibility layer (88 cryptographic algorithms)
+[0;34m[INFO][0m   ✓ Device 255 master crypto controller
+[0;34m[INFO][0m   ✓ All Layer 7/8/9 runtime APIs
+[0;34m[INFO][0m 
+[2025-12-09 23:12:46] [DEBUG] Projects to build: clang;clang-tools-extra;lld;lldb;mlir;flang;openmp;polly;bolt
+[2025-12-09 23:12:46] [DEBUG] Targets to build: all
+[0;34m[INFO][0m CMake cache exists - reconfiguring (preserving build state)...
+[0;34m[INFO][0m Existing build artifacts will be preserved - only changed configs will update
+[2025-12-09 23:12:46] [DEBUG] CMake command: cmake -G Ninja -S /home/john/DSMILSystem/toolchains/DSLLVM/llvm -B ./build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra;lld;lldb;mlir;flang;openmp;polly;bolt -DLLVM_TARGETS_TO_BUILD=all -DLLVM_ENABLE_DSMIL=ON -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_EH=OFF -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_TERMINFO=ON -DLLVM_ENABLE_ZLIB=ON -DLLVM_ENABLE_ZSTD=ON -DLLVM_INCLUDE_EXAMPLES=ON -DLLVM_INCLUDE_TESTS=ON -DLLVM_INCLUDE_BENCHMARKS=ON -DLLVM_BUILD_EXAMPLES=OFF -DLLVM_BUILD_TESTS=OFF -DLLVM_BUILD_BENCHMARKS=OFF -DLLVM_INSTALL_UTILS=ON -DLLVM_OPTIMIZED_TABLEGEN=ON -DLLVM_USE_SPLIT_DWARF=ON -DLLVM_ENABLE_BACKTRACES=ON -DLLVM_ENABLE_UNWIND_TABLES=ON -DLLVM_ENABLE_CRASH_OVERRIDES=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLLVM_ENABLE_PIC=ON -DLLVM_ENABLE_PLUGINS=ON -DLLVM_ENABLE_BINDINGS=ON -DLLVM_ENABLE_OCAMLDOC=ON -DLLVM_ENABLE_Z3_SOLVER=OFF -DLLVM_ENABLE_LIBPFM=ON -DLLVM_ENABLE_LIBEDIT=ON -DLLVM_ENABLE_TERMINFO=ON -DLLVM_ENABLE_FFI=OFF -DBUILD_SHARED_LIBS=OFF
+[0;34m[INFO][0m Progress: Configuring build system...
+[2025-12-09 23:13:27] [DEBUG] -- Enabling Flang-RT as a dependency of Flang
+[1;33m[WARNING][0m CMake Warning at CMakeLists.txt:211 (message):
+[2025-12-09 23:13:27] [DEBUG] -- bolt project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- clang project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- clang-tools-extra project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- compiler-rt project is disabled
+[2025-12-09 23:13:27] [DEBUG] -- cross-project-tests project is disabled
+[2025-12-09 23:13:27] [DEBUG] -- libclc project is disabled
+[2025-12-09 23:13:27] [DEBUG] -- lld project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- lldb project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- mlir project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- openmp project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- polly project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- flang project is enabled
+[2025-12-09 23:13:27] [DEBUG] -- libc project is disabled
+[2025-12-09 23:13:27] [DEBUG] -- Enabling compiler-rt as a dependency of Flang
+[2025-12-09 23:13:27] [DEBUG] -- Found Python3: /usr/bin/python3 (found suitable version "3.13.9", minimum required is "3.8") found components: Interpreter
+[2025-12-09 23:13:27] [DEBUG] -- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.15.1")
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+[2025-12-09 23:13:27] [DEBUG] -- LLVM host triple: x86_64-unknown-linux-gnu
+[2025-12-09 23:13:27] [DEBUG] -- Native target architecture is X86
+[2025-12-09 23:13:27] [DEBUG] -- Threads enabled.
+[2025-12-09 23:13:27] [DEBUG] -- Doxygen disabled.
+[2025-12-09 23:13:27] [DEBUG] -- Ninja version: 1.13.2
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find OCaml (missing: OCAMLFIND OCAML_VERSION OCAML_STDLIB_PATH) 
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find OCaml (missing: OCAMLFIND OCAML_VERSION OCAML_STDLIB_PATH) 
+[2025-12-09 23:13:27] [DEBUG] -- OCaml bindings disabled.
+[2025-12-09 23:13:27] [DEBUG] -- LLVM default target triple: x86_64-unknown-linux-gnu
+[2025-12-09 23:13:27] [DEBUG] -- Building with -fPIC
+[2025-12-09 23:13:27] [DEBUG] -- Targeting AArch64
+[2025-12-09 23:13:27] [DEBUG] -- Targeting AMDGPU
+[2025-12-09 23:13:27] [DEBUG] -- Targeting ARM
+[2025-12-09 23:13:27] [DEBUG] -- Targeting AVR
+[2025-12-09 23:13:27] [DEBUG] -- Targeting BPF
+[2025-12-09 23:13:27] [DEBUG] -- Targeting Hexagon
+[2025-12-09 23:13:27] [DEBUG] -- Targeting Lanai
+[2025-12-09 23:13:27] [DEBUG] -- Targeting LoongArch
+[2025-12-09 23:13:27] [DEBUG] -- Targeting Mips
+[2025-12-09 23:13:27] [DEBUG] -- Targeting MSP430
+[2025-12-09 23:13:27] [DEBUG] -- Targeting NVPTX
+[2025-12-09 23:13:27] [DEBUG] -- Targeting PowerPC
+[2025-12-09 23:13:27] [DEBUG] -- Targeting RISCV
+[2025-12-09 23:13:27] [DEBUG] -- Targeting Sparc
+[2025-12-09 23:13:27] [DEBUG] -- Targeting SPIRV
+[2025-12-09 23:13:27] [DEBUG] -- Targeting SystemZ
+[2025-12-09 23:13:27] [DEBUG] -- Targeting VE
+[2025-12-09 23:13:27] [DEBUG] -- Targeting WebAssembly
+[2025-12-09 23:13:27] [DEBUG] -- Targeting X86
+[2025-12-09 23:13:27] [DEBUG] -- Targeting XCore
+[2025-12-09 23:13:27] [DEBUG] -- Building omp_lib.mod disabled by RUNTIMES_FLANG_MODULES_ENABLED=''; libomp-mod does nothing
+[2025-12-09 23:13:27] [DEBUG] -- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+[2025-12-09 23:13:27] [DEBUG] -- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter Development Development.Module Development.Embed
+[2025-12-09 23:13:27] [DEBUG] -- LLD version: 22.0.0
+[2025-12-09 23:13:27] [DEBUG] -- Could not find nvcc, please set CUDAToolkit_ROOT.
+[2025-12-09 23:13:27] [DEBUG] -- Clang version: 22.0.0git
+[2025-12-09 23:13:27] [DEBUG] -- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+[2025-12-09 23:13:27] [DEBUG] -- Found Python3: /usr/bin/python3 (found suitable version "3.13.9", minimum required is "3.8") found components: Interpreter
+[2025-12-09 23:13:27] [DEBUG] -- Flang version: 22.0.0
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_DEPRECATED_COPY_FLAG
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_DEPRECATED_COPY_FLAG - Success
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_STRING_CONVERSION_FLAG
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_STRING_CONVERSION_FLAG - Failed
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_CTAD_MAYBE_UNSUPPORTED_FLAG
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_CTAD_MAYBE_UNSUPPORTED_FLAG - Success
+[2025-12-09 23:13:27] [DEBUG] -- quadmath.h found without additional include paths
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find SWIG (missing: SWIG_EXECUTABLE SWIG_DIR) (Required is at least version "4")
+[2025-12-09 23:13:27] [DEBUG] -- Enable SWIG to generate LLDB bindings: FALSE
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+[2025-12-09 23:13:27] [DEBUG] -- Enable editline support in LLDB: FALSE
+[2025-12-09 23:13:27] [DEBUG] -- Looking for acs_map
+[2025-12-09 23:13:27] [DEBUG] -- Looking for acs_map - found
+[2025-12-09 23:13:27] [DEBUG] -- Enable curses support in LLDB: TRUE
+[2025-12-09 23:13:27] [DEBUG] -- Enable LZMA compression support in LLDB: TRUE
+[2025-12-09 23:13:27] [DEBUG] -- SWIG 4 or later is required for Lua support in LLDB but could not be found
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find LuaAndSwig (missing: LUA_EXECUTABLE LUA_LIBRARIES LUA_INCLUDE_DIR LUA_VERSION_MINOR LUA_VERSION_MAJOR LLDB_ENABLE_SWIG) 
+[2025-12-09 23:13:27] [DEBUG] -- Enable Lua scripting support in LLDB: FALSE
+[2025-12-09 23:13:27] [DEBUG] -- SWIG 4 or later is required for Python support in LLDB but could not be found
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find PythonAndSwig (missing: Python3_LIBRARIES Python3_INCLUDE_DIRS LLDB_ENABLE_SWIG) 
+[2025-12-09 23:13:27] [DEBUG] -- Enable Python scripting support in LLDB: FALSE
+[2025-12-09 23:13:27] [DEBUG] -- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found suitable version "2.15.1", minimum required is "2.8")
+[2025-12-09 23:13:27] [DEBUG] -- Enable Libxml 2 support in LLDB: TRUE
+[2025-12-09 23:13:27] [DEBUG] -- Enable libfbsdvmcore support in LLDB: 0
+[2025-12-09 23:13:27] [DEBUG] -- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+[2025-12-09 23:13:27] [DEBUG] -- LLDB version: 22.0.0git
+[2025-12-09 23:13:27] [DEBUG] -- Skipping FreeBSDKernel plugin due to missing libfbsdvmcore
+[2025-12-09 23:13:27] [DEBUG] -- Symbols (liblldb): exporting all symbols from the lldb namespace
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+[2025-12-09 23:13:27] [DEBUG] -- Found dirname: /usr/bin/dirname
+[2025-12-09 23:13:27] [DEBUG] -- Targeting AArch64 in llvm-bolt
+[2025-12-09 23:13:27] [DEBUG] -- Targeting X86 in llvm-bolt
+[2025-12-09 23:13:27] [DEBUG] -- Targeting RISCV in llvm-bolt
+[2025-12-09 23:13:27] [DEBUG] -- Building BOLT runtime libraries for x86_64
+[2025-12-09 23:13:27] [DEBUG] -- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+[2025-12-09 23:13:27] [DEBUG] -- ISL version: isl-0.25-193-g8621c60c
+[2025-12-09 23:13:27] [DEBUG] -- Registering Polly as a pass plugin (static build: ON)
+[2025-12-09 23:13:27] [DEBUG] -- Registering ExampleIRTransforms as a pass plugin (static build: OFF)
+[2025-12-09 23:13:27] [DEBUG] -- Registering Bye as a pass plugin (static build: OFF)
+[2025-12-09 23:13:27] [DEBUG] -- Failed to find LLVM FileCheck
+[2025-12-09 23:13:27] [DEBUG] -- Google Benchmark version: v0.0.0, normalized to 0.0.0
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test HAVE_GNU_POSIX_REGEX -- failed to compile
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test HAVE_POSIX_REGEX -- success
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test HAVE_STEADY_CLOCK -- success
+[2025-12-09 23:13:27] [DEBUG] -- Performing Test HAVE_PTHREAD_AFFINITY -- success
+[2025-12-09 23:13:27] [DEBUG] -- Configuring done (10.8s)
+[2025-12-09 23:13:27] [DEBUG] -- Generating done (28.5s)
+[0;34m[INFO][0m -- Build files have been written to: /home/john/DSMILSystem/toolchains/DSLLVM/build
+[0;34m[INFO][0m -- Configuring done (10.8s)
+[0;34m[INFO][0m -- Generating done (28.5s)
+[0;34m[INFO][0m -- Build files have been written to: /home/john/DSMILSystem/toolchains/DSLLVM/build
+-- Enabling Flang-RT as a dependency of Flang
+CMake Warning at CMakeLists.txt:211 (message):
+  Using LLVM_ENABLE_PROJECTS=openmp is deprecated now, and will become a
+  fatal error in a future release.  Please use -DLLVM_ENABLE_RUNTIMES=openmp
+  or see the instructions at https://openmp.llvm.org/ for building the
+  runtimes.
+
+
+-- bolt project is enabled
+-- clang project is enabled
+-- clang-tools-extra project is enabled
+-- compiler-rt project is disabled
+-- cross-project-tests project is disabled
+-- libclc project is disabled
+-- lld project is enabled
+-- lldb project is enabled
+-- mlir project is enabled
+-- openmp project is enabled
+-- polly project is enabled
+-- flang project is enabled
+-- libc project is disabled
+-- Enabling compiler-rt as a dependency of Flang
+-- Found Python3: /usr/bin/python3 (found suitable version "3.13.9", minimum required is "3.8") found components: Interpreter
+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.15.1")
+-- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+-- LLVM host triple: x86_64-unknown-linux-gnu
+-- Native target architecture is X86
+-- Threads enabled.
+-- Doxygen disabled.
+-- Ninja version: 1.13.2
+-- Could NOT find OCaml (missing: OCAMLFIND OCAML_VERSION OCAML_STDLIB_PATH) 
+-- Could NOT find OCaml (missing: OCAMLFIND OCAML_VERSION OCAML_STDLIB_PATH) 
+-- OCaml bindings disabled.
+-- LLVM default target triple: x86_64-unknown-linux-gnu
+-- Building with -fPIC
+-- Targeting AArch64
+-- Targeting AMDGPU
+-- Targeting ARM
+-- Targeting AVR
+-- Targeting BPF
+-- Targeting Hexagon
+-- Targeting Lanai
+-- Targeting LoongArch
+-- Targeting Mips
+-- Targeting MSP430
+-- Targeting NVPTX
+-- Targeting PowerPC
+-- Targeting RISCV
+-- Targeting Sparc
+-- Targeting SPIRV
+-- Targeting SystemZ
+-- Targeting VE
+-- Targeting WebAssembly
+-- Targeting X86
+-- Targeting XCore
+-- Building omp_lib.mod disabled by RUNTIMES_FLANG_MODULES_ENABLED=''; libomp-mod does nothing
+-- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+-- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter Development Development.Module Development.Embed
+-- LLD version: 22.0.0
+-- Could not find nvcc, please set CUDAToolkit_ROOT.
+-- Clang version: 22.0.0git
+-- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+-- Found Python3: /usr/bin/python3 (found suitable version "3.13.9", minimum required is "3.8") found components: Interpreter
+-- Flang version: 22.0.0
+-- Performing Test CXX_SUPPORTS_NO_DEPRECATED_COPY_FLAG
+-- Performing Test CXX_SUPPORTS_NO_DEPRECATED_COPY_FLAG - Success
+-- Performing Test CXX_SUPPORTS_NO_STRING_CONVERSION_FLAG
+-- Performing Test CXX_SUPPORTS_NO_STRING_CONVERSION_FLAG - Failed
+-- Performing Test CXX_SUPPORTS_NO_CTAD_MAYBE_UNSUPPORTED_FLAG
+-- Performing Test CXX_SUPPORTS_NO_CTAD_MAYBE_UNSUPPORTED_FLAG - Success
+-- quadmath.h found without additional include paths
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Could NOT find SWIG (missing: SWIG_EXECUTABLE SWIG_DIR) (Required is at least version "4")
+-- Enable SWIG to generate LLDB bindings: FALSE
+-- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+-- Enable editline support in LLDB: FALSE
+-- Looking for acs_map
+-- Looking for acs_map - found
+-- Enable curses support in LLDB: TRUE
+-- Enable LZMA compression support in LLDB: TRUE
+-- SWIG 4 or later is required for Lua support in LLDB but could not be found
+-- Could NOT find LuaAndSwig (missing: LUA_EXECUTABLE LUA_LIBRARIES LUA_INCLUDE_DIR LUA_VERSION_MINOR LUA_VERSION_MAJOR LLDB_ENABLE_SWIG) 
+-- Enable Lua scripting support in LLDB: FALSE
+-- SWIG 4 or later is required for Python support in LLDB but could not be found
+-- Could NOT find PythonAndSwig (missing: Python3_LIBRARIES Python3_INCLUDE_DIRS LLDB_ENABLE_SWIG) 
+-- Enable Python scripting support in LLDB: FALSE
+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found suitable version "2.15.1", minimum required is "2.8")
+-- Enable Libxml 2 support in LLDB: TRUE
+-- Enable libfbsdvmcore support in LLDB: 0
+-- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+-- LLDB version: 22.0.0git
+-- Skipping FreeBSDKernel plugin due to missing libfbsdvmcore
+-- Symbols (liblldb): exporting all symbols from the lldb namespace
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Found dirname: /usr/bin/dirname
+-- Targeting AArch64 in llvm-bolt
+-- Targeting X86 in llvm-bolt
+-- Targeting RISCV in llvm-bolt
+-- Building BOLT runtime libraries for x86_64
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- ISL version: isl-0.25-193-g8621c60c
+-- Registering Polly as a pass plugin (static build: ON)
+-- Registering ExampleIRTransforms as a pass plugin (static build: OFF)
+-- Registering Bye as a pass plugin (static build: OFF)
+-- Failed to find LLVM FileCheck
+-- Google Benchmark version: v0.0.0, normalized to 0.0.0
+-- Performing Test HAVE_GNU_POSIX_REGEX -- failed to compile
+-- Performing Test HAVE_POSIX_REGEX -- success
+-- Performing Test HAVE_STEADY_CLOCK -- success
+-- Performing Test HAVE_PTHREAD_AFFINITY -- success
+-- Configuring done (10.8s)
+-- Generating done (28.5s)
+-- Build files have been written to: /home/john/DSMILSystem/toolchains/DSLLVM/build
+[0;32m[SUCCESS][0m Configuration complete
+[2025-12-09 23:13:27] [DEBUG] CMake cache saved to: ./build/CMakeCache.txt
+[0;34m[INFO][0m Verifying DSMIL configuration...
+[0;32m[SUCCESS][0m ✓ LLVM_ENABLE_DSMIL=ON
+[0;32m[SUCCESS][0m ✓ DSMIL source directory detected
+[0;32m[SUCCESS][0m ✓ LLVM_ENABLE_RTTI=ON (required for DSMIL)
+[1;33m[WARNING][0m ⚠ LLVM_ENABLE_EH is OFF (may cause issues)
+[0;32m[SUCCESS][0m ✓ Clang project enabled
+[0;32m[SUCCESS][0m All DSMIL configuration checks passed
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Step: Building DSLLVM
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-09 23:13:27] [DEBUG] Details: 
+[0;34m[INFO][0m Resuming previous build (build state preserved)
+[0;34m[INFO][0m Ninja will skip already-built targets automatically
+[0;34m[INFO][0m This may take 30-120 minutes depending on your system...
+[0;34m[INFO][0m Using 9 parallel jobs
+[0;34m[INFO][0m Build log: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251209-231228.log
+[0;34m[INFO][0m Build cache: ./build/.ninja_deps (enables resume)
+[0;34m[INFO][0m tmux found. Starting build with thermal guardian in a split tmux session.
+[0;34m[INFO][0m Creating tmux session: dsllvm_build_20251209231327
+[0;34m[INFO][0m Build will run in pane 0, Thermal Guardian in pane 1.
+Build starting in tmux pane...
+ninja: Entering directory `./build'
+[1/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/Use.cpp.o
+[2/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/User.cpp.o
+[3/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/TypedPointerType.cpp.o
+[4/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/TypeFinder.cpp.o
+[5/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/StructuralHash.cpp.o
+[6/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/VectorTypeUtils.cpp.o
+[7/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/ValueSymbolTable.cpp.o
+[8/10364] Linking CXX static library lib/libLLVMBinaryFormat.a
+[9/10364] Linking CXX static library lib/libLLVMRemarks.a
+[10/10364] Building CXX object lib/DebugInfo/DWARF/LowLevel/CMakeFiles/LLVMDebugInfoDWARFLowLevel.dir/DWARFCFIProgram.cpp.o
+[11/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/PassManager.cpp.o
+[12/10364] Building CXX object lib/DebugInfo/DWARF/LowLevel/CMakeFiles/LLVMDebugInfoDWARFLowLevel.dir/DWARFExpression.cpp.o
+[13/10364] Building LLVMConversionEnumsFromLLVM.inc...
+[14/10364] Building LLVMConversionEnumsToLLVM.inc...
+[15/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/Value.cpp.o
+[16/10364] Building LLVMConversions.inc...
+[17/10364] Building LLVMOpFromLLVMIRConversions.inc...
+[18/10364] Linking CXX static library lib/libMLIRBytecodeReader.a
+[19/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/VFABIDemangler.cpp.o
+[20/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/Type.cpp.o
+[21/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/RuntimeLibcalls.cpp.o
+In file included from /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/IR/RuntimeLibcalls.cpp:27:
+/home/john/DSMILSystem/toolchains/DSLLVM/build/include/llvm/IR/RuntimeLibcalls.inc: In member function ‘void llvm::RTLIB::RuntimeLibcallsInfo::setTargetRuntimeLibcallSets(const llvm::Triple&, llvm::ExceptionHandling, llvm::FloatABI::ABIType, llvm::EABI, llvm::StringRef)’:
+/home/john/DSMILSystem/toolchains/DSLLVM/build/include/llvm/IR/RuntimeLibcalls.inc:50366:57: warning: enumerated and non-enumerated type in conditional expression [-Wextra]
+50366 |         setLibcallImplCallingConv(Impl, TT.isWatchABI() ? DefaultCC :
+      |                                         ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+50367 |     (isAAPCS_ABI(TT, ABIName) ? CallingConv::ARM_AAPCS : CallingConv::ARM_APCS));
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/john/DSMILSystem/toolchains/DSLLVM/build/include/llvm/IR/RuntimeLibcalls.inc:50379:57: warning: enumerated and non-enumerated type in conditional expression [-Wextra]
+50379 |         setLibcallImplCallingConv(Impl, TT.isWatchABI() ? DefaultCC :
+      |                                         ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+50380 |     (isAAPCS_ABI(TT, ABIName) ? CallingConv::ARM_AAPCS : CallingConv::ARM_APCS));
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/john/DSMILSystem/toolchains/DSLLVM/build/include/llvm/IR/RuntimeLibcalls.inc:50394:57: warning: enumerated and non-enumerated type in conditional expression [-Wextra]
+50394 |         setLibcallImplCallingConv(Impl, TT.isWatchABI() ? DefaultCC :
+      |                                         ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+50395 |     (isAAPCS_ABI(TT, ABIName) ? CallingConv::ARM_AAPCS : CallingConv::ARM_APCS));
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[22/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/SafepointIRVerifier.cpp.o
+[23/10364] Building CXX object lib/DebugInfo/DWARF/LowLevel/CMakeFiles/LLVMDebugInfoDWARFLowLevel.dir/DWARFUnwindTable.cpp.o
+[24/10364] Building CXX object lib/Bitcode/Reader/CMakeFiles/LLVMBitReader.dir/BitReader.cpp.o
+[25/10364] Building CXX object lib/Bitcode/Reader/CMakeFiles/LLVMBitReader.dir/ValueList.cpp.o
+[26/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/DXContainerPSVInfo.cpp.o
+[27/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/DXContainerRootSignature.cpp.o
+[28/10364] Building CXX object tools/mlir/lib/Parser/CMakeFiles/obj.MLIRParser.dir/Parser.cpp.o
+[29/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/ConstantPools.cpp.o
+[30/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/GOFFObjectWriter.cpp.o
+[31/10364] Building CXX object lib/Bitcode/Reader/CMakeFiles/LLVMBitReader.dir/BitcodeAnalyzer.cpp.o
+[32/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmInfoCOFF.cpp.o
+[33/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmInfoDarwin.cpp.o
+[34/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmBackend.cpp.o
+[35/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmInfo.cpp.o
+[36/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmInfoWasm.cpp.o
+[37/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmInfoELF.cpp.o
+[38/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/ELFObjectWriter.cpp.o
+[39/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmInfoGOFF.cpp.o
+[40/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmMacro.cpp.o
+[41/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCCodeEmitter.cpp.o
+[42/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmInfoXCOFF.cpp.o
+[43/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAssembler.cpp.o
+[44/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCCodeView.cpp.o
+[45/10364] Building CXX object lib/Bitcode/Reader/CMakeFiles/LLVMBitReader.dir/MetadataLoader.cpp.o
+[46/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/Metadata.cpp.o
+[47/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCELFObjectTargetWriter.cpp.o
+[48/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCDXContainerStreamer.cpp.o
+[49/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCDXContainerWriter.cpp.o
+[50/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCAsmStreamer.cpp.o
+[51/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCFragment.cpp.o
+[52/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCDwarf.cpp.o
+[53/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCExpr.cpp.o
+[54/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCELFStreamer.cpp.o
+[55/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCInst.cpp.o
+[56/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCInstrAnalysis.cpp.o
+[57/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCGOFFStreamer.cpp.o
+[58/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCLabel.cpp.o
+[59/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCInstPrinter.cpp.o
+[60/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCInstrInfo.cpp.o
+[61/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCContext.cpp.o
+[62/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCInstrDesc.cpp.o
+[63/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCLinkerOptimizationHint.cpp.o
+[64/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCMachObjectTargetWriter.cpp.o
+[65/10364] Building CXX object lib/IR/CMakeFiles/LLVMCore.dir/Verifier.cpp.o
+[66/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCNullStreamer.cpp.o
+[67/10364] Linking CXX static library lib/libLLVMCore.a
+[68/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCRegisterInfo.cpp.o
+[69/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCObjectWriter.cpp.o
+[70/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSchedule.cpp.o
+[71/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCMachOStreamer.cpp.o
+[72/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCObjectFileInfo.cpp.o
+[73/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCObjectStreamer.cpp.o
+[74/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSectionMachO.cpp.o
+[75/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSection.cpp.o
+[76/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSPIRVStreamer.cpp.o
+[77/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCPseudoProbe.cpp.o
+[78/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSubtargetInfo.cpp.o
+[79/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSymbolXCOFF.cpp.o
+[80/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSymbolELF.cpp.o
+[81/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCTargetOptions.cpp.o
+[82/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCWasmObjectTargetWriter.cpp.o
+[83/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSymbol.cpp.o
+[84/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCValue.cpp.o
+[85/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCSFrame.cpp.o
+[86/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCTargetOptionsCommandFlags.cpp.o
+[87/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCWinEH.cpp.o
+[88/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCWasmStreamer.cpp.o
+[89/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCXCOFFObjectTargetWriter.cpp.o
+[90/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCXCOFFStreamer.cpp.o
+[91/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCStreamer.cpp.o
+[92/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCWinCOFFStreamer.cpp.o
+[93/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/SPIRVObjectWriter.cpp.o
+[94/10364] Linking CXX static library lib/libLLVMDebugInfoDWARFLowLevel.a
+[95/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/StringTableBuilder.cpp.o
+[96/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/TargetRegistry.cpp.o
+[97/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MCWin64EH.cpp.o
+[98/10364] Building CXX object lib/Bitcode/Reader/CMakeFiles/LLVMBitReader.dir/BitcodeReader.cpp.o
+[99/10364] Building CXX object lib/AsmParser/CMakeFiles/LLVMAsmParser.dir/AsmParserContext.cpp.o
+[100/10364] Building LLVMConvertibleLLVMIRIntrinsics.inc...
+[101/10364] Building LLVMIntrinsicConversions.inc...
+[102/10364] Building LLVMIntrinsicFromLLVMIRConversions.inc...
+[103/10364] Linking CXX static library lib/libMLIRParser.a
+[104/10364] Generating VCSRevision.h
+[105/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/MachObjectWriter.cpp.o
+[106/10364] Linking CXX static library lib/libLLVMBitReader.a
+[107/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/WinCOFFObjectWriter.cpp.o
+[108/10364] Building CXX object lib/AsmParser/CMakeFiles/LLVMAsmParser.dir/LLLexer.cpp.o
+[109/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/XCOFFObjectWriter.cpp.o
+[110/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/AsmLexer.cpp.o
+[111/10364] Building CXX object lib/MC/CMakeFiles/LLVMMC.dir/WasmObjectWriter.cpp.o
+[112/10364] Building CXX object lib/IRReader/CMakeFiles/LLVMIRReader.dir/IRReader.cpp.o
+[113/10364] Linking CXX static library lib/libLLVMMC.a
+[114/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/GOFFAsmParser.cpp.o
+[115/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/COFFMasmParser.cpp.o
+[116/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/COFFAsmParser.cpp.o
+[117/10364] Building CXX object lib/AsmParser/CMakeFiles/LLVMAsmParser.dir/Parser.cpp.o
+[118/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/MCAsmParserExtension.cpp.o
+[119/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/ELFAsmParser.cpp.o
+[120/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/MCTargetAsmParser.cpp.o
+[121/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/DarwinAsmParser.cpp.o
+[122/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/ArchitectureSet.cpp.o
+[123/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/Architecture.cpp.o
+[124/10364] Building CXX object tools/mlir/tools/mlir-linalg-ods-gen/CMakeFiles/mlir-linalg-ods-yaml-gen.dir/mlir-linalg-ods-yaml-gen.cpp.o
+[125/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/XCOFFAsmParser.cpp.o
+[126/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/MCAsmParser.cpp.o
+[127/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/WasmAsmParser.cpp.o
+[128/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/PackedVersion.cpp.o
+[129/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/Platform.cpp.o
+[130/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/RecordVisitor.cpp.o
+[131/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/Symbol.cpp.o
+[132/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/TextAPIError.cpp.o
+[133/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/SymbolSet.cpp.o
+[134/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/InterfaceFile.cpp.o
+[135/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/Target.cpp.o
+[136/10364] Linking CXX executable bin/mlir-linalg-ods-yaml-gen
+[137/10364] Building LLVMDialectBytecode.cpp.inc...
+[138/10364] Building TestAttrInterfaces.cpp.inc...
+[139/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/RecordsSlice.cpp.o
+[140/10364] Building TestAttrInterfaces.h.inc...
+[141/10364] Building TestOpInterfaces.cpp.inc...
+[142/10364] Building TestOpInterfaces.h.inc...
+[143/10364] Building TestTypeInterfaces.cpp.inc...
+[144/10364] Building TestTypeInterfaces.h.inc...
+[145/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/AsmParser.cpp.o
+[146/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/TextStubCommon.cpp.o
+[147/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/Utils.cpp.o
+[148/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/Binary.cpp.o
+[149/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/Archive.cpp.o
+[150/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/TextStubV5.cpp.o
+[151/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/BuildID.cpp.o
+[152/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/COFFImportFile.cpp.o
+[153/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/Decompressor.cpp.o
+[154/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/COFFModuleDefinition.cpp.o
+[155/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/ArchiveWriter.cpp.o
+[156/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/Error.cpp.o
+[157/10364] Building CXX object lib/TextAPI/CMakeFiles/LLVMTextAPI.dir/TextStub.cpp.o
+[158/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/FaultMapParser.cpp.o
+[159/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/DXContainer.cpp.o
+[160/10364] Building CXX object lib/MC/MCParser/CMakeFiles/LLVMMCParser.dir/MasmParser.cpp.o
+[161/10364] Linking CXX static library lib/libLLVMMCParser.a
+[162/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/COFFObjectFile.cpp.o
+[163/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/GOFFObjectFile.cpp.o
+[164/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/IRObjectFile.cpp.o
+[165/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/Minidump.cpp.o
+[166/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/IRSymtab.cpp.o
+[167/10364] Building CXX object lib/AsmParser/CMakeFiles/LLVMAsmParser.dir/LLParser.cpp.o
+[168/10364] Linking CXX static library lib/libLLVMAsmParser.a
+[169/10364] Linking CXX static library lib/libLLVMIRReader.a
+[170/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/Object.cpp.o
+[171/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/ObjectFile.cpp.o
+[172/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/MachOUniversal.cpp.o
+[173/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/ModuleSymbolTable.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/ModuleSymbolTable.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/ModuleSymbolTable.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/ModuleSymbolTable.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/ModuleSymbolTable.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/ModuleSymbolTable.cpp
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/ModuleSymbolTable.cpp:250:1: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/ModuleSymbolTable.cpp.o.d: No such file or directory
+  250 | }
+      | ^
+compilation terminated.
+[174/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/OffloadBinary.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/OffloadBinary.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/OffloadBinary.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/OffloadBinary.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/OffloadBinary.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/OffloadBinary.cpp
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/OffloadBinary.cpp:384:1: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/OffloadBinary.cpp.o.d: No such file or directory
+  384 | }
+      | ^
+compilation terminated.
+[175/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/SFrameParser.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/SFrameParser.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/SFrameParser.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/SFrameParser.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/SFrameParser.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp
+In file included from /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:9:
+In constructor ‘llvm::object::SFrameParser<llvm::endianness::big>::FrameRowEntry::FrameRowEntry(llvm::object::SFrameParser<llvm::endianness::big>::FrameRowEntry&&)’,
+    inlined from ‘llvm::object::SFrameParser<llvm::endianness::big>::FallibleFREIterator::FallibleFREIterator(llvm::object::SFrameParser<llvm::endianness::big>::FallibleFREIterator&&)’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/Object/SFrameParser.h:85:48,
+    inlined from ‘llvm::fallible_iterator<Underlying> llvm::make_fallible_itr(Underlying, Error&) [with Underlying = object::SFrameParser<llvm::endianness::big>::FallibleFREIterator]’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/ADT/fallible_iterator.h:221:44,
+    inlined from ‘llvm::iterator_range<llvm::fallible_iterator<llvm::object::SFrameParser<E>::FallibleFREIterator> > llvm::object::SFrameParser<E>::fres(const llvm::sframe::FuncDescEntry<E>&, llvm::Error&) const [with llvm::endianness E = llvm::endianness::big]’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:178:16:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/Object/SFrameParser.h:52:10: warning: ‘<unnamed>.llvm::object::SFrameParser<llvm::endianness::big>::FallibleFREIterator::FRE.llvm::object::SFrameParser<llvm::endianness::big>::FrameRowEntry::Info’ is used uninitialized [-Wuninitialized]
+   52 |   struct FrameRowEntry {
+      |          ^~~~~~~~~~~~~
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp: In member function ‘llvm::iterator_range<llvm::fallible_iterator<llvm::object::SFrameParser<E>::FallibleFREIterator> > llvm::object::SFrameParser<E>::fres(const llvm::sframe::FuncDescEntry<E>&, llvm::Error&) const [with llvm::endianness E = llvm::endianness::big]’:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:179:7: note: ‘<anonymous>’ declared here
+  179 |       FallibleFREIterator(Data, FDE.Info.getFREType(), -1, FDE.NumFREs, Offset),
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In constructor ‘llvm::object::SFrameParser<llvm::endianness::big>::FrameRowEntry::FrameRowEntry(llvm::object::SFrameParser<llvm::endianness::big>::FrameRowEntry&&)’,
+    inlined from ‘llvm::object::SFrameParser<llvm::endianness::big>::FallibleFREIterator::FallibleFREIterator(llvm::object::SFrameParser<llvm::endianness::big>::FallibleFREIterator&&)’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/Object/SFrameParser.h:85:48,
+    inlined from ‘llvm::fallible_iterator<Underlying> llvm::make_fallible_end(Underlying) [with Underlying = object::SFrameParser<llvm::endianness::big>::FallibleFREIterator]’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/ADT/fallible_iterator.h:228:44,
+    inlined from ‘llvm::iterator_range<llvm::fallible_iterator<llvm::object::SFrameParser<E>::FallibleFREIterator> > llvm::object::SFrameParser<E>::fres(const llvm::sframe::FuncDescEntry<E>&, llvm::Error&) const [with llvm::endianness E = llvm::endianness::big]’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:181:16:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/Object/SFrameParser.h:52:10: warning: ‘<unnamed>.llvm::object::SFrameParser<llvm::endianness::big>::FallibleFREIterator::FRE.llvm::object::SFrameParser<llvm::endianness::big>::FrameRowEntry::Info’ is used uninitialized [-Wuninitialized]
+   52 |   struct FrameRowEntry {
+      |          ^~~~~~~~~~~~~
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp: In member function ‘llvm::iterator_range<llvm::fallible_iterator<llvm::object::SFrameParser<E>::FallibleFREIterator> > llvm::object::SFrameParser<E>::fres(const llvm::sframe::FuncDescEntry<E>&, llvm::Error&) const [with llvm::endianness E = llvm::endianness::big]’:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:182:7: note: ‘<anonymous>’ declared here
+  182 |       FallibleFREIterator(Data, FDE.Info.getFREType(), FDE.NumFREs, FDE.NumFREs,
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  183 |                           /*Offset=*/0));
+      |                           ~~~~~~~~~~~~~
+In constructor ‘llvm::object::SFrameParser<llvm::endianness::little>::FrameRowEntry::FrameRowEntry(llvm::object::SFrameParser<llvm::endianness::little>::FrameRowEntry&&)’,
+    inlined from ‘llvm::object::SFrameParser<llvm::endianness::little>::FallibleFREIterator::FallibleFREIterator(llvm::object::SFrameParser<llvm::endianness::little>::FallibleFREIterator&&)’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/Object/SFrameParser.h:85:48,
+    inlined from ‘llvm::fallible_iterator<Underlying> llvm::make_fallible_itr(Underlying, Error&) [with Underlying = object::SFrameParser<llvm::endianness::little>::FallibleFREIterator]’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/ADT/fallible_iterator.h:221:44,
+    inlined from ‘llvm::iterator_range<llvm::fallible_iterator<llvm::object::SFrameParser<E>::FallibleFREIterator> > llvm::object::SFrameParser<E>::fres(const llvm::sframe::FuncDescEntry<E>&, llvm::Error&) const [with llvm::endianness E = llvm::endianness::little]’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:178:16:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/Object/SFrameParser.h:52:10: warning: ‘<unnamed>.llvm::object::SFrameParser<llvm::endianness::little>::FallibleFREIterator::FRE.llvm::object::SFrameParser<llvm::endianness::little>::FrameRowEntry::Info’ is used uninitialized [-Wuninitialized]
+   52 |   struct FrameRowEntry {
+      |          ^~~~~~~~~~~~~
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp: In member function ‘llvm::iterator_range<llvm::fallible_iterator<llvm::object::SFrameParser<E>::FallibleFREIterator> > llvm::object::SFrameParser<E>::fres(const llvm::sframe::FuncDescEntry<E>&, llvm::Error&) const [with llvm::endianness E = llvm::endianness::little]’:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:179:7: note: ‘<anonymous>’ declared here
+  179 |       FallibleFREIterator(Data, FDE.Info.getFREType(), -1, FDE.NumFREs, Offset),
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In constructor ‘llvm::object::SFrameParser<llvm::endianness::little>::FrameRowEntry::FrameRowEntry(llvm::object::SFrameParser<llvm::endianness::little>::FrameRowEntry&&)’,
+    inlined from ‘llvm::object::SFrameParser<llvm::endianness::little>::FallibleFREIterator::FallibleFREIterator(llvm::object::SFrameParser<llvm::endianness::little>::FallibleFREIterator&&)’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/Object/SFrameParser.h:85:48,
+    inlined from ‘llvm::fallible_iterator<Underlying> llvm::make_fallible_end(Underlying) [with Underlying = object::SFrameParser<llvm::endianness::little>::FallibleFREIterator]’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/ADT/fallible_iterator.h:228:44,
+    inlined from ‘llvm::iterator_range<llvm::fallible_iterator<llvm::object::SFrameParser<E>::FallibleFREIterator> > llvm::object::SFrameParser<E>::fres(const llvm::sframe::FuncDescEntry<E>&, llvm::Error&) const [with llvm::endianness E = llvm::endianness::little]’ at /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:181:16:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include/llvm/Object/SFrameParser.h:52:10: warning: ‘<unnamed>.llvm::object::SFrameParser<llvm::endianness::little>::FallibleFREIterator::FRE.llvm::object::SFrameParser<llvm::endianness::little>::FrameRowEntry::Info’ is used uninitialized [-Wuninitialized]
+   52 |   struct FrameRowEntry {
+      |          ^~~~~~~~~~~~~
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp: In member function ‘llvm::iterator_range<llvm::fallible_iterator<llvm::object::SFrameParser<E>::FallibleFREIterator> > llvm::object::SFrameParser<E>::fres(const llvm::sframe::FuncDescEntry<E>&, llvm::Error&) const [with llvm::endianness E = llvm::endianness::little]’:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:182:7: note: ‘<anonymous>’ declared here
+  182 |       FallibleFREIterator(Data, FDE.Info.getFREType(), FDE.NumFREs, FDE.NumFREs,
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  183 |                           /*Offset=*/0));
+      |                           ~~~~~~~~~~~~~
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp: At global scope:
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/SFrameParser.cpp:233:51: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/SFrameParser.cpp.o.d: No such file or directory
+  233 |     llvm::object::SFrameParser<endianness::little>;
+      |                                                   ^
+compilation terminated.
+[176/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/RecordStreamer.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/RecordStreamer.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/RecordStreamer.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/RecordStreamer.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/RecordStreamer.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/RecordStreamer.cpp
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/RecordStreamer.cpp:228:1: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/RecordStreamer.cpp.o.d: No such file or directory
+  228 | }
+      | ^
+compilation terminated.
+[177/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/OffloadBundle.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/OffloadBundle.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/OffloadBundle.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/OffloadBundle.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/OffloadBundle.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/OffloadBundle.cpp
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/OffloadBundle.cpp:600:1: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/OffloadBundle.cpp.o.d: No such file or directory
+  600 | }
+      | ^
+compilation terminated.
+[178/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/RelocationResolver.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/RelocationResolver.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/RelocationResolver.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/RelocationResolver.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/RelocationResolver.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/RelocationResolver.cpp
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/RelocationResolver.cpp:923:1: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/RelocationResolver.cpp.o.d: No such file or directory
+  923 | } // namespace llvm
+      | ^
+compilation terminated.
+[179/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/ELFObjectFile.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/ELFObjectFile.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/ELFObjectFile.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/ELFObjectFile.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/ELFObjectFile.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/ELFObjectFile.cpp
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/ELFObjectFile.cpp:1080:1: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/ELFObjectFile.cpp.o.d: No such file or directory
+ 1080 | }
+      | ^
+compilation terminated.
+[180/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/MachOObjectFile.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/MachOObjectFile.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/MachOObjectFile.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/MachOObjectFile.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/MachOObjectFile.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/MachOObjectFile.cpp
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/MachOObjectFile.cpp:5441:1: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/MachOObjectFile.cpp.o.d: No such file or directory
+ 5441 | }
+      | ^
+compilation terminated.
+[181/10364] Building CXX object lib/Object/CMakeFiles/LLVMObject.dir/ELF.cpp.o
+FAILED: [code=1] lib/Object/CMakeFiles/LLVMObject.dir/ELF.cpp.o 
+/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/john/DSMILSystem/toolchains/DSLLVM/build/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object -I/home/john/DSMILSystem/toolchains/DSLLVM/build/include -I/home/john/DSMILSystem/toolchains/DSLLVM/llvm/include -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-nonnull -Wno-class-memaccess -Wno-dangling-reference -Wno-redundant-move -Wno-pessimizing-move -Wno-array-bounds -Wno-stringop-overread -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wno-misleading-indentation -Wctad-maybe-unsupported -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++17  -fno-exceptions -funwind-tables -MD -MT lib/Object/CMakeFiles/LLVMObject.dir/ELF.cpp.o -MF lib/Object/CMakeFiles/LLVMObject.dir/ELF.cpp.o.d -o lib/Object/CMakeFiles/LLVMObject.dir/ELF.cpp.o -c /home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/ELF.cpp
+/home/john/DSMILSystem/toolchains/DSLLVM/llvm/lib/Object/ELF.cpp:1068:67: fatal error: opening dependency file lib/Object/CMakeFiles/LLVMObject.dir/ELF.cpp.o.d: No such file or directory
+ 1068 | template class LLVM_EXPORT_TEMPLATE llvm::object::ELFFile<ELF64BE>;
+      |                                                                   ^
+compilation terminated.
+ninja: build stopped: subcommand failed.
+
+[0;32mBuild Finished![0m
+

@@ -1,0 +1,1165 @@
+[0;34m[INFO][0m Installation log: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251210-223224.log
+==========================================
+DSLLVM Installation Log
+Started: Wed 10 Dec 22:32:24 GMT 2025
+Command: ./install-dsllvm.sh 
+User: root
+System: Linux debian 6.17.9+deb14-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.17.9-1 (2025-11-26) x86_64 GNU/Linux
+==========================================
+
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Step: Prerequisites Check
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-10 22:32:24] [DEBUG] Details: 
+[2025-12-10 22:32:24] [DEBUG]   ✓ Found build-essential
+[2025-12-10 22:32:24] [DEBUG] Checking for required build tools...
+[2025-12-10 22:32:24] [DEBUG]   ✓ Found cmake: cmake version 3.31.6
+[2025-12-10 22:32:24] [DEBUG]   ✓ Found ninja: 1.13.2
+[2025-12-10 22:32:24] [DEBUG]   ✓ Found python3: Python 3.13.9
+[2025-12-10 22:32:24] [DEBUG]   ✓ Found git: git version 2.51.0
+[2025-12-10 22:32:24] [DEBUG]   ✓ Found sensors
+[0;34m[INFO][0m All core build prerequisites met.
+[2025-12-10 22:32:24] [DEBUG] Checking CMake version...
+[2025-12-10 22:32:24] [DEBUG]   CMake version: 3.31.6
+[2025-12-10 22:32:24] [DEBUG] Checking disk space...
+[2025-12-10 22:32:24] [DEBUG]   Disk space: 128GB available
+[0;32m[SUCCESS][0m All prerequisites met
+[0;34m[INFO][0m Detected 10 P-cores. Setting build jobs to P-core count.
+[0;34m[INFO][0m   (Heuristic: Assumes P-cores are hyperthreaded, E-cores are not).
+[0;34m[INFO][0m   (Total logical CPUs - Total physical cores = P-cores)
+[0;34m[INFO][0m Using 10 parallel build jobs
+[2025-12-10 22:32:24] [DEBUG] Setting up build cache and resume support...
+[0;34m[INFO][0m Build caching enabled:
+[0;34m[INFO][0m   - Ninja dependency tracking: automatic resume support
+[0;34m[INFO][0m   - Build state preserved in: ./build/.ninja_deps
+[0;34m[INFO][0m   - Build log: ./build/.ninja_log
+[0;34m[INFO][0m 
+[0;34m[INFO][0m If build is interrupted, simply re-run this script to resume
+[0;34m[INFO][0m   (or run: ninja -C ./build -j10)
+[0;34m[INFO][0m No existing build detected - starting fresh build
+[0;34m[INFO][0m Checking for existing LLVM installation...
+[0;34m[INFO][0m Backing up existing LLVM installation to /opt/llvm-backup-20251210-223224
+[0;32m[SUCCESS][0m Backup created at /opt/llvm-backup-20251210-223224
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Step: CMake Configuration
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-10 22:32:40] [DEBUG] Details: 
+[0;34m[INFO][0m Build type: Release
+[0;34m[INFO][0m Install prefix: /usr/local
+[0;34m[INFO][0m Build directory: ./build
+[0;34m[INFO][0m Log file: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251210-223224.log
+[0;34m[INFO][0m DSMIL Features to Enable:
+[0;34m[INFO][0m   ✓ All 20 DSMIL passes:
+[0;34m[INFO][0m     - BFT, BlueRed, ConstantTime, CrossDomain, EdgeSecurity
+[0;34m[INFO][0m     - FuzzCoverage, FuzzExport, JADC2, MPE, Metrics
+[0;34m[INFO][0m     - MissionPolicy, NuclearSurety, RadioBridge, Stealth
+[0;34m[INFO][0m     - Telecom, Telemetry, TelemetryCheck, ThreatSignature
+[0;34m[INFO][0m     - DSSSL: ApiMisuse, Coverage, CryptoMetrics
+[0;34m[INFO][0m   ✓ All 25+ DSMIL runtime libraries:
+[0;34m[INFO][0m     - Core: stealth, radio, nuclear, MPE, JADC2, edge_security, cross_domain, blue_red, bft
+[0;34m[INFO][0m     - Devices: device15_wycheproof, device255_crypto, device46_pqc, device47_crypto
+[0;34m[INFO][0m     - Layers: layer7_llm, layer8_security, layer8_security_crypto, layer9_executive
+[0;34m[INFO][0m     - Advanced: int8_quantization, quantum, mlops_optimization, mlops_crypto
+[0;34m[INFO][0m     - System: intelligence_flow, memory_budget, hil_orchestration, paths
+[0;34m[INFO][0m   ✓ Wycheproof integration (Device 15 crypto assurance)
+[0;34m[INFO][0m   ✓ TPM2 compatibility layer (88 cryptographic algorithms)
+[0;34m[INFO][0m   ✓ Device 255 master crypto controller
+[0;34m[INFO][0m   ✓ All Layer 7/8/9 runtime APIs
+[0;34m[INFO][0m 
+[2025-12-10 22:32:40] [DEBUG] Projects to build: clang;clang-tools-extra;lld;lldb;mlir;flang;openmp;polly;bolt
+[2025-12-10 22:32:40] [DEBUG] Targets to build: all
+[0;34m[INFO][0m Running CMake configuration (this may take a few minutes)...
+[2025-12-10 22:32:40] [DEBUG] CMake command: cmake -G Ninja -S /home/john/DSMILSystem/toolchains/DSLLVM/llvm -B ./build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra;lld;lldb;mlir;flang;openmp;polly;bolt -DLLVM_TARGETS_TO_BUILD=all -DLLVM_ENABLE_DSMIL=ON -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_EH=OFF -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_TERMINFO=ON -DLLVM_ENABLE_ZLIB=ON -DLLVM_ENABLE_ZSTD=ON -DLLVM_INCLUDE_EXAMPLES=ON -DLLVM_INCLUDE_TESTS=ON -DLLVM_INCLUDE_BENCHMARKS=ON -DLLVM_BUILD_EXAMPLES=OFF -DLLVM_BUILD_TESTS=OFF -DLLVM_BUILD_BENCHMARKS=OFF -DLLVM_INSTALL_UTILS=ON -DLLVM_OPTIMIZED_TABLEGEN=ON -DLLVM_USE_SPLIT_DWARF=ON -DLLVM_ENABLE_BACKTRACES=ON -DLLVM_ENABLE_UNWIND_TABLES=ON -DLLVM_ENABLE_CRASH_OVERRIDES=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLLVM_ENABLE_PIC=ON -DLLVM_ENABLE_PLUGINS=ON -DLLVM_ENABLE_BINDINGS=ON -DLLVM_ENABLE_OCAMLDOC=ON -DLLVM_ENABLE_Z3_SOLVER=OFF -DLLVM_ENABLE_LIBPFM=ON -DLLVM_ENABLE_LIBEDIT=ON -DLLVM_ENABLE_TERMINFO=ON -DLLVM_ENABLE_FFI=OFF -DBUILD_SHARED_LIBS=OFF
+[0;34m[INFO][0m Progress: Configuring build system...
+[2025-12-10 22:33:24] [DEBUG] -- The C compiler identification is GNU 15.2.0
+[2025-12-10 22:33:24] [DEBUG] -- The CXX compiler identification is GNU 15.2.0
+[2025-12-10 22:33:24] [DEBUG] -- The ASM compiler identification is GNU
+[2025-12-10 22:33:24] [DEBUG] -- Found assembler: /usr/bin/gcc
+[2025-12-10 22:33:24] [DEBUG] -- Detecting C compiler ABI info
+[2025-12-10 22:33:24] [DEBUG] -- Detecting C compiler ABI info - done
+[2025-12-10 22:33:24] [DEBUG] -- Check for working C compiler: /usr/bin/gcc - skipped
+[2025-12-10 22:33:24] [DEBUG] -- Detecting C compile features
+[2025-12-10 22:33:24] [DEBUG] -- Detecting C compile features - done
+[2025-12-10 22:33:24] [DEBUG] -- Detecting CXX compiler ABI info
+[2025-12-10 22:33:24] [DEBUG] -- Detecting CXX compiler ABI info - done
+[2025-12-10 22:33:24] [DEBUG] -- Check for working CXX compiler: /usr/bin/g++ - skipped
+[2025-12-10 22:33:24] [DEBUG] -- Detecting CXX compile features
+[2025-12-10 22:33:24] [DEBUG] -- Detecting CXX compile features - done
+[2025-12-10 22:33:24] [DEBUG] -- Enabling Flang-RT as a dependency of Flang
+[1;33m[WARNING][0m CMake Warning at CMakeLists.txt:211 (message):
+[2025-12-10 22:33:24] [DEBUG] -- bolt project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- clang project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- clang-tools-extra project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- compiler-rt project is disabled
+[2025-12-10 22:33:24] [DEBUG] -- cross-project-tests project is disabled
+[2025-12-10 22:33:24] [DEBUG] -- libclc project is disabled
+[2025-12-10 22:33:24] [DEBUG] -- lld project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- lldb project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- mlir project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- openmp project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- polly project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- flang project is enabled
+[2025-12-10 22:33:24] [DEBUG] -- libc project is disabled
+[2025-12-10 22:33:24] [DEBUG] -- Enabling compiler-rt as a dependency of Flang
+[2025-12-10 22:33:24] [DEBUG] -- Found Python3: /usr/bin/python3 (found suitable version "3.13.9", minimum required is "3.8") found components: Interpreter
+[2025-12-10 22:33:24] [DEBUG] -- Looking for __GLIBC__
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __GLIBC__ - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for valgrind/valgrind.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for valgrind/valgrind.h - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for FE_ALL_EXCEPT
+[2025-12-10 22:33:25] [DEBUG] -- Looking for FE_ALL_EXCEPT - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for FE_INEXACT
+[2025-12-10 22:33:25] [DEBUG] -- Looking for FE_INEXACT - found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_BUILTIN_THREAD_POINTER
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_BUILTIN_THREAD_POINTER - Success
+[2025-12-10 22:33:25] [DEBUG] -- Looking for CrashReporterClient.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for CrashReporterClient.h - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for linux/magic.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for linux/magic.h - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_create in pthread
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_create in pthread - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_rwlock_init in pthread
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_rwlock_init in pthread - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_mutex_lock in pthread
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_mutex_lock in pthread - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for dlopen in dl
+[2025-12-10 22:33:25] [DEBUG] -- Looking for dlopen in dl - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for shm_open in rt
+[2025-12-10 22:33:25] [DEBUG] -- Looking for shm_open in rt - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pfm_initialize in pfm
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pfm_initialize in pfm - not found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[2025-12-10 22:33:25] [DEBUG] -- Found Threads: TRUE
+[2025-12-10 22:33:25] [DEBUG] -- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3.1")
+[2025-12-10 22:33:25] [DEBUG] -- Looking for compress2
+[2025-12-10 22:33:25] [DEBUG] -- Looking for compress2 - found
+[2025-12-10 22:33:25] [DEBUG] -- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.15.1")
+[2025-12-10 22:33:25] [DEBUG] -- Looking for xmlReadMemory
+[2025-12-10 22:33:25] [DEBUG] -- Looking for xmlReadMemory - found
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+[2025-12-10 22:33:25] [DEBUG] -- Looking for arc4random
+[2025-12-10 22:33:25] [DEBUG] -- Looking for arc4random - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for backtrace
+[2025-12-10 22:33:25] [DEBUG] -- Looking for backtrace - found
+[2025-12-10 22:33:25] [DEBUG] -- backtrace facility detected in default set of libraries
+[2025-12-10 22:33:25] [DEBUG] -- Found Backtrace: /usr/include
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WERROR_UNGUARDED_AVAILABILITY_NEW
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WERROR_UNGUARDED_AVAILABILITY_NEW - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __register_frame
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __register_frame - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __deregister_frame
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __deregister_frame - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __unw_add_dynamic_fde
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __unw_add_dynamic_fde - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for _Unwind_Backtrace
+[2025-12-10 22:33:25] [DEBUG] -- Looking for _Unwind_Backtrace - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for getpagesize
+[2025-12-10 22:33:25] [DEBUG] -- Looking for getpagesize - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sysconf
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sysconf - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for getrusage
+[2025-12-10 22:33:25] [DEBUG] -- Looking for getrusage - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for isatty
+[2025-12-10 22:33:25] [DEBUG] -- Looking for isatty - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for futimens
+[2025-12-10 22:33:25] [DEBUG] -- Looking for futimens - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for futimes
+[2025-12-10 22:33:25] [DEBUG] -- Looking for futimes - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for getauxval
+[2025-12-10 22:33:25] [DEBUG] -- Looking for getauxval - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sigaltstack
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sigaltstack - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for mallctl
+[2025-12-10 22:33:25] [DEBUG] -- Looking for mallctl - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for mallinfo
+[2025-12-10 22:33:25] [DEBUG] -- Looking for mallinfo - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for mallinfo2
+[2025-12-10 22:33:25] [DEBUG] -- Looking for mallinfo2 - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for malloc_zone_statistics
+[2025-12-10 22:33:25] [DEBUG] -- Looking for malloc_zone_statistics - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for posix_spawn
+[2025-12-10 22:33:25] [DEBUG] -- Looking for posix_spawn - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pread
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pread - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sbrk
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sbrk - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for strerror_r
+[2025-12-10 22:33:25] [DEBUG] -- Looking for strerror_r - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for strerror_s
+[2025-12-10 22:33:25] [DEBUG] -- Looking for strerror_s - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for setenv
+[2025-12-10 22:33:25] [DEBUG] -- Looking for setenv - found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_STRUCT_STAT_ST_MTIMESPEC_TV_NSEC
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_STRUCT_STAT_ST_MTIMESPEC_TV_NSEC - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC - Success
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_getname_np
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_getname_np - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_setname_np
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_setname_np - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_get_name_np
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_get_name_np - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_set_name_np
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_set_name_np - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for dlopen
+[2025-12-10 22:33:25] [DEBUG] -- Looking for dlopen - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for proc_pid_rusage
+[2025-12-10 22:33:25] [DEBUG] -- Looking for proc_pid_rusage - not found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_ATOMICS_WITHOUT_LIB
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_ATOMICS_WITHOUT_LIB - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_ATOMICS64_WITHOUT_LIB
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_ATOMICS64_WITHOUT_LIB - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LLVM_HAS_ATOMICS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LLVM_HAS_ATOMICS - Success
+[2025-12-10 22:33:25] [DEBUG] -- LLVM host triple: x86_64-unknown-linux-gnu
+[2025-12-10 22:33:25] [DEBUG] -- Native target architecture is X86
+[2025-12-10 22:33:25] [DEBUG] -- Threads enabled.
+[2025-12-10 22:33:25] [DEBUG] -- Doxygen disabled.
+[2025-12-10 22:33:25] [DEBUG] -- Ninja version: 1.13.2
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find OCaml (missing: OCAMLFIND OCAML_VERSION OCAML_STDLIB_PATH) 
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find OCaml (missing: OCAMLFIND OCAML_VERSION OCAML_STDLIB_PATH) 
+[2025-12-10 22:33:25] [DEBUG] -- OCaml bindings disabled.
+[2025-12-10 22:33:25] [DEBUG] -- Found Python module pygments
+[2025-12-10 22:33:25] [DEBUG] -- Found Python module pygments.lexers.c_cpp
+[2025-12-10 22:33:25] [DEBUG] -- Found Python module yaml
+[2025-12-10 22:33:25] [DEBUG] -- LLVM default target triple: x86_64-unknown-linux-gnu
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LLVM_USES_LIBSTDCXX
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LLVM_USES_LIBSTDCXX - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LLVM_DEFAULT_TO_GLIBCXX_USE_CXX11_ABI
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LLVM_DEFAULT_TO_GLIBCXX_USE_CXX11_ABI - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_FPIC
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_FPIC - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_FPIC
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_FPIC - Success
+[2025-12-10 22:33:25] [DEBUG] -- Building with -fPIC
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_FNO_SEMANTIC_INTERPOSITION
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_FNO_SEMANTIC_INTERPOSITION - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_FNO_SEMANTIC_INTERPOSITION
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_FNO_SEMANTIC_INTERPOSITION - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_CXX98_COMPAT_EXTRA_SEMI_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_CXX98_COMPAT_EXTRA_SEMI_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_CXX98_COMPAT_EXTRA_SEMI_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_CXX98_COMPAT_EXTRA_SEMI_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_SUGGEST_OVERRIDE_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_SUGGEST_OVERRIDE_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_WSUGGEST_OVERRIDE_ALLOWS_ONLY_FINAL
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_WSUGGEST_OVERRIDE_ALLOWS_ONLY_FINAL - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_WCOMMENT_ALLOWS_LINE_WRAP
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_WCOMMENT_ALLOWS_LINE_WRAP - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_CTAD_MAYBE_UNSPPORTED_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_CTAD_MAYBE_UNSPPORTED_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_CTAD_MAYBE_UNSPPORTED_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_CTAD_MAYBE_UNSPPORTED_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LINKER_SUPPORTS_COLOR_DIAGNOSTICS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LINKER_SUPPORTS_COLOR_DIAGNOSTICS - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Looking for os_signpost_interval_begin
+[2025-12-10 22:33:25] [DEBUG] -- Looking for os_signpost_interval_begin - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for flock
+[2025-12-10 22:33:25] [DEBUG] -- Looking for flock - found
+[2025-12-10 22:33:25] [DEBUG] -- Linker detection: GNU ld
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LLVM_LINKER_SUPPORTS_B_SYMBOLIC_FUNCTIONS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LLVM_LINKER_SUPPORTS_B_SYMBOLIC_FUNCTIONS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAS_WERROR_GLOBAL_CTORS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAS_WERROR_GLOBAL_CTORS - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __x86_64__
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __x86_64__ - found
+[2025-12-10 22:33:25] [DEBUG] -- Found Git: /usr/bin/git (found version "2.51.0")
+[2025-12-10 22:33:25] [DEBUG] -- Looking for logf128
+[2025-12-10 22:33:25] [DEBUG] -- Looking for logf128 - found
+[2025-12-10 22:33:25] [DEBUG] -- Targeting AArch64
+[2025-12-10 22:33:25] [DEBUG] -- Targeting AMDGPU
+[2025-12-10 22:33:25] [DEBUG] -- Targeting ARM
+[2025-12-10 22:33:25] [DEBUG] -- Targeting AVR
+[2025-12-10 22:33:25] [DEBUG] -- Targeting BPF
+[2025-12-10 22:33:25] [DEBUG] -- Targeting Hexagon
+[2025-12-10 22:33:25] [DEBUG] -- Targeting Lanai
+[2025-12-10 22:33:25] [DEBUG] -- Targeting LoongArch
+[2025-12-10 22:33:25] [DEBUG] -- Targeting Mips
+[2025-12-10 22:33:25] [DEBUG] -- Targeting MSP430
+[2025-12-10 22:33:25] [DEBUG] -- Targeting NVPTX
+[2025-12-10 22:33:25] [DEBUG] -- Targeting PowerPC
+[2025-12-10 22:33:25] [DEBUG] -- Targeting RISCV
+[2025-12-10 22:33:25] [DEBUG] -- Targeting Sparc
+[2025-12-10 22:33:25] [DEBUG] -- Targeting SPIRV
+[2025-12-10 22:33:25] [DEBUG] -- Targeting SystemZ
+[2025-12-10 22:33:25] [DEBUG] -- Targeting VE
+[2025-12-10 22:33:25] [DEBUG] -- Targeting WebAssembly
+[2025-12-10 22:33:25] [DEBUG] -- Targeting X86
+[2025-12-10 22:33:25] [DEBUG] -- Targeting XCore
+[2025-12-10 22:33:25] [DEBUG] -- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
+[2025-12-10 22:33:25] [DEBUG] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.5.4")
+[2025-12-10 22:33:25] [DEBUG] -- Checking for module 'tss2-sys'
+[2025-12-10 22:33:25] [DEBUG] --   Found tss2-sys, version 4.1.3
+[2025-12-10 22:33:25] [DEBUG] -- Checking for module 'tss2-tcti-device'
+[2025-12-10 22:33:25] [DEBUG] --   Found tss2-tcti-device, version 4.1.3
+[2025-12-10 22:33:25] [DEBUG] -- Checking for module 'liboqs'
+[2025-12-10 22:33:25] [DEBUG] --   Found liboqs, version 0.15.0
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WALL_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WALL_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WERROR_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WERROR_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_COLOR_DIAGNOSTICS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_COLOR_DIAGNOSTICS - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WCAST_QUAL_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WCAST_QUAL_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WFORMAT_PEDANTIC_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WFORMAT_PEDANTIC_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WIMPLICIT_FALLTHROUGH_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WIMPLICIT_FALLTHROUGH_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WSIGN_COMPARE_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WSIGN_COMPARE_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WEXTRA_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WEXTRA_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WPEDANTIC_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WPEDANTIC_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WMAYBE_UNINITIALIZED_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_WMAYBE_UNINITIALIZED_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_NO_SEMANTIC_INTERPOSITION
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_NO_SEMANTIC_INTERPOSITION - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_FUNCTION_SECTIONS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_FUNCTION_SECTIONS - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_DATA_SECTIONS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test OPENMP_HAVE_DATA_SECTIONS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Building omp_lib.mod disabled by RUNTIMES_FLANG_MODULES_ENABLED=''; libomp-mod does nothing
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_FNO_EXCEPTIONS_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_FNO_EXCEPTIONS_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_FNO_RTTI_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_FNO_RTTI_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WCLASS_MEMACCESS_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WCLASS_MEMACCESS_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WCOVERED_SWITCH_DEFAULT_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WCOVERED_SWITCH_DEFAULT_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WFRAME_ADDRESS_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WFRAME_ADDRESS_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WSTRICT_ALIASING_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WSTRICT_ALIASING_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WSTRINGOP_OVERFLOW_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WSTRINGOP_OVERFLOW_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WSTRINGOP_TRUNCATION_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WSTRINGOP_TRUNCATION_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WSWITCH_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WSWITCH_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WUNINITIALIZED_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WUNINITIALIZED_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WRETURN_TYPE_C_LINKAGE_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WRETURN_TYPE_C_LINKAGE_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WCAST_QUAL_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WCAST_QUAL_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WINT_TO_VOID_POINTER_CAST_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WINT_TO_VOID_POINTER_CAST_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_MSSE2_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_MSSE2_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_FTLS_MODEL_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_FTLS_MODEL_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_MMIC_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_MMIC_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_M32_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_M32_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_setname_np
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_setname_np - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_set_name_np
+[2025-12-10 22:33:25] [DEBUG] -- Looking for pthread_set_name_np - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for shm_open
+[2025-12-10 22:33:25] [DEBUG] -- Looking for shm_open - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for xmmintrin.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for xmmintrin.h - found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE__MM_MALLOC
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE__MM_MALLOC - Success
+[2025-12-10 22:33:25] [DEBUG] -- Looking for aligned_alloc
+[2025-12-10 22:33:25] [DEBUG] -- Looking for aligned_alloc - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for posix_memalign
+[2025-12-10 22:33:25] [DEBUG] -- Looking for posix_memalign - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for _aligned_malloc
+[2025-12-10 22:33:25] [DEBUG] -- Looking for _aligned_malloc - not found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_X_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_X_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_AS_NEEDED_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_AS_NEEDED_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_VERSION_SCRIPT_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_VERSION_SCRIPT_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_STATIC_LIBGCC_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_STATIC_LIBGCC_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_Z_NOEXECSTACK_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_Z_NOEXECSTACK_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Looking for immintrin.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for immintrin.h - found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_ATTRIBUTE_RTM
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_ATTRIBUTE_RTM - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_ATTRIBUTE_WAITPKG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_ATTRIBUTE_WAITPKG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WAITPKG_INTRINSICS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WAITPKG_INTRINSICS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_RTM_INTRINSICS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_RTM_INTRINSICS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_VERSION_SYMBOLS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_VERSION_SYMBOLS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE___BUILTIN_FRAME_ADDRESS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE___BUILTIN_FRAME_ADDRESS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WEAK_ATTRIBUTE
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_WEAK_ATTRIBUTE - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_PSAPI
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test LIBOMP_HAVE_PSAPI - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sqrt in m
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sqrt in m - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __atomic_load_1
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __atomic_load_1 - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __atomic_load_1 in atomic
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __atomic_load_1 in atomic - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __atomic_load_1
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __atomic_load_1 - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __atomic_load_1 in atomic
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __atomic_load_1 in atomic - found
+[2025-12-10 22:33:25] [DEBUG] -- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter Development Development.Module Development.Embed
+[2025-12-10 22:33:25] [DEBUG] -- LLD version: 22.0.0
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WUNDEF
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WUNDEF - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WERROR_MISMATCHED_TAGS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WERROR_MISMATCHED_TAGS - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WERROR_GLOBAL_CONSTRUCTOR
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test C_SUPPORTS_WERROR_GLOBAL_CONSTRUCTOR - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_WERROR_GLOBAL_CONSTRUCTOR
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_WERROR_GLOBAL_CONSTRUCTOR - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Could not find nvcc, please set CUDAToolkit_ROOT.
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test COMPILER_SUPPORTS_WARNING_WEAK_VTABLES
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test COMPILER_SUPPORTS_WARNING_WEAK_VTABLES - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sys/resource.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sys/resource.h - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for dlfcn.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for dlfcn.h - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for dladdr
+[2025-12-10 22:33:25] [DEBUG] -- Looking for dladdr - found
+[2025-12-10 22:33:25] [DEBUG] -- Clang version: 22.0.0git
+[2025-12-10 22:33:25] [DEBUG] -- Looking for include file sys/inotify.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for include file sys/inotify.h - found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_LINKER_FLAG_LONG_PLT
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_LINKER_FLAG_LONG_PLT - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Found Perl: /usr/bin/perl (found version "5.40.1")
+[2025-12-10 22:33:25] [DEBUG] -- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+[2025-12-10 22:33:25] [DEBUG] -- Found Python3: /usr/bin/python3 (found suitable version "3.13.9", minimum required is "3.8") found components: Interpreter
+[2025-12-10 22:33:25] [DEBUG] -- Flang version: 22.0.0
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_DEPRECATED_COPY_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_DEPRECATED_COPY_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_STRING_CONVERSION_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_STRING_CONVERSION_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_CTAD_MAYBE_UNSUPPORTED_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_CTAD_MAYBE_UNSUPPORTED_FLAG - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_NESTED_ANON_TYPES_FLAG
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_NESTED_ANON_TYPES_FLAG - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_LDBL_MANT_DIG_113
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_LDBL_MANT_DIG_113 - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Looking for quadmath.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for quadmath.h - found
+[2025-12-10 22:33:25] [DEBUG] -- quadmath.h found without additional include paths
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sinq in quadmath
+[2025-12-10 22:33:25] [DEBUG] -- Looking for sinq in quadmath - found
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find SWIG (missing: SWIG_EXECUTABLE SWIG_DIR) (Required is at least version "4")
+[2025-12-10 22:33:25] [DEBUG] -- Enable SWIG to generate LLDB bindings: FALSE
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+[2025-12-10 22:33:25] [DEBUG] -- Enable editline support in LLDB: FALSE
+[2025-12-10 22:33:25] [DEBUG] -- Looking for acs_map
+[2025-12-10 22:33:25] [DEBUG] -- Looking for acs_map - found
+[2025-12-10 22:33:25] [DEBUG] -- Found CursesAndPanel: /usr/include
+[2025-12-10 22:33:25] [DEBUG] -- Enable curses support in LLDB: TRUE
+[2025-12-10 22:33:25] [DEBUG] -- Looking for lzma_auto_decoder in /usr/lib/x86_64-linux-gnu/liblzma.so
+[2025-12-10 22:33:25] [DEBUG] -- Looking for lzma_auto_decoder in /usr/lib/x86_64-linux-gnu/liblzma.so - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for lzma_easy_encoder in /usr/lib/x86_64-linux-gnu/liblzma.so
+[2025-12-10 22:33:25] [DEBUG] -- Looking for lzma_easy_encoder in /usr/lib/x86_64-linux-gnu/liblzma.so - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for lzma_lzma_preset in /usr/lib/x86_64-linux-gnu/liblzma.so
+[2025-12-10 22:33:25] [DEBUG] -- Looking for lzma_lzma_preset in /usr/lib/x86_64-linux-gnu/liblzma.so - found
+[2025-12-10 22:33:25] [DEBUG] -- Found LibLZMA: /usr/lib/x86_64-linux-gnu/liblzma.so (found version "5.8.1")
+[2025-12-10 22:33:25] [DEBUG] -- Enable LZMA compression support in LLDB: TRUE
+[2025-12-10 22:33:25] [DEBUG] -- SWIG 4 or later is required for Lua support in LLDB but could not be found
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find LuaAndSwig (missing: LUA_EXECUTABLE LUA_LIBRARIES LUA_INCLUDE_DIR LUA_VERSION_MINOR LUA_VERSION_MAJOR LLDB_ENABLE_SWIG) 
+[2025-12-10 22:33:25] [DEBUG] -- Enable Lua scripting support in LLDB: FALSE
+[2025-12-10 22:33:25] [DEBUG] -- SWIG 4 or later is required for Python support in LLDB but could not be found
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find PythonAndSwig (missing: Python3_LIBRARIES Python3_INCLUDE_DIRS LLDB_ENABLE_SWIG) 
+[2025-12-10 22:33:25] [DEBUG] -- Enable Python scripting support in LLDB: FALSE
+[2025-12-10 22:33:25] [DEBUG] -- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found suitable version "2.15.1", minimum required is "2.8")
+[2025-12-10 22:33:25] [DEBUG] -- Enable Libxml 2 support in LLDB: TRUE
+[2025-12-10 22:33:25] [DEBUG] -- Enable libfbsdvmcore support in LLDB: 0
+[2025-12-10 22:33:25] [DEBUG] -- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_STRINGOP_TRUNCATION
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_STRINGOP_TRUNCATION - Success
+[2025-12-10 22:33:25] [DEBUG] -- LLDB version: 22.0.0git
+[2025-12-10 22:33:25] [DEBUG] -- Looking for ppoll
+[2025-12-10 22:33:25] [DEBUG] -- Looking for ppoll - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for ptsname_r
+[2025-12-10 22:33:25] [DEBUG] -- Looking for ptsname_r - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for accept4
+[2025-12-10 22:33:25] [DEBUG] -- Looking for accept4 - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for termios.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for termios.h - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for include files sys/types.h, sys/event.h
+[2025-12-10 22:33:25] [DEBUG] -- Looking for include files sys/types.h, sys/event.h - not found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for process_vm_readv
+[2025-12-10 22:33:25] [DEBUG] -- Looking for process_vm_readv - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __NR_process_vm_readv
+[2025-12-10 22:33:25] [DEBUG] -- Looking for __NR_process_vm_readv - found
+[2025-12-10 22:33:25] [DEBUG] -- Looking for compression_encode_buffer in compression
+[2025-12-10 22:33:25] [DEBUG] -- Looking for compression_encode_buffer in compression - not found
+[2025-12-10 22:33:25] [DEBUG] -- Skipping FreeBSDKernel plugin due to missing libfbsdvmcore
+[2025-12-10 22:33:25] [DEBUG] -- Symbols (liblldb): exporting all symbols from the lldb namespace
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+[2025-12-10 22:33:25] [DEBUG] -- Found make: /usr/bin/gmake
+[2025-12-10 22:33:25] [DEBUG] -- Found dirname: /usr/bin/dirname
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_DOCUMENTATION
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_DOCUMENTATION - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_DOCUMENTATION_DEPRECATED_SYNC
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test CXX_SUPPORTS_NO_DOCUMENTATION_DEPRECATED_SYNC - Success
+[2025-12-10 22:33:25] [DEBUG] -- Looking for gettid
+[2025-12-10 22:33:25] [DEBUG] -- Looking for gettid - found
+[2025-12-10 22:33:25] [DEBUG] -- Targeting AArch64 in llvm-bolt
+[2025-12-10 22:33:25] [DEBUG] -- Targeting X86 in llvm-bolt
+[2025-12-10 22:33:25] [DEBUG] -- Targeting RISCV in llvm-bolt
+[2025-12-10 22:33:25] [DEBUG] -- Building BOLT runtime libraries for x86_64
+[2025-12-10 22:33:25] [DEBUG] -- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+[2025-12-10 22:33:25] [DEBUG] -- ISL version: isl-0.25-193-g8621c60c
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAS_ATTRIBUTE_WARN_UNUSED_RESULT
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAS_ATTRIBUTE_WARN_UNUSED_RESULT - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE___ATTRIBUTE__
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE___ATTRIBUTE__ - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL_FFS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL_FFS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL___BUILTIN_FFS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL___BUILTIN_FFS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL__BITSCANFORWARD
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL__BITSCANFORWARD - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL_STRCASECMP
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL_STRCASECMP - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL__STRICMP
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL__STRICMP - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL_STRNCASECMP
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL_STRNCASECMP - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL__STRNICMP
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL__STRNICMP - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL_SNPRINTF
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL_SNPRINTF - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL__SNPRINTF
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_DECL__SNPRINTF - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_UINT8T
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_UINT8T - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_STDINT_H
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_STDINT_H - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_INTTYPES_H
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_INTTYPES_H - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_SYS_INTTYPES_H
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_SYS_INTTYPES_H - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Registering Polly as a pass plugin (static build: ON)
+[2025-12-10 22:33:25] [DEBUG] -- Registering ExampleIRTransforms as a pass plugin (static build: OFF)
+[2025-12-10 22:33:25] [DEBUG] -- Registering Bye as a pass plugin (static build: OFF)
+[2025-12-10 22:33:25] [DEBUG] -- Failed to find LLVM FileCheck
+[2025-12-10 22:33:25] [DEBUG] -- Google Benchmark version: v0.0.0, normalized to 0.0.0
+[2025-12-10 22:33:25] [DEBUG] -- Looking for shm_open in rt
+[2025-12-10 22:33:25] [DEBUG] -- Looking for shm_open in rt - found
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WALL
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WALL - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WEXTRA
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WEXTRA - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WSHADOW
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WSHADOW - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WFLOAT_EQUAL
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WFLOAT_EQUAL - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WOLD_STYLE_CAST
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WOLD_STYLE_CAST - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WSUGGEST_OVERRIDE
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WSUGGEST_OVERRIDE - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_PEDANTIC
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_PEDANTIC - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_PEDANTIC_ERRORS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_PEDANTIC_ERRORS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WSHORTEN_64_TO_32
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WSHORTEN_64_TO_32 - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_FSTRICT_ALIASING
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_FSTRICT_ALIASING - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WNO_DEPRECATED_DECLARATIONS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WNO_DEPRECATED_DECLARATIONS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_FNO_EXCEPTIONS
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_FNO_EXCEPTIONS - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WSTRICT_ALIASING
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WSTRICT_ALIASING - Success
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WD654
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WD654 - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WTHREAD_SAFETY
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_WTHREAD_SAFETY - Failed
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_COVERAGE
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_CXX_FLAG_COVERAGE - Success
+[2025-12-10 22:33:25] [DEBUG] -- Compiling and running to test HAVE_GNU_POSIX_REGEX
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_GNU_POSIX_REGEX -- failed to compile
+[2025-12-10 22:33:25] [DEBUG] -- Compiling and running to test HAVE_POSIX_REGEX
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_POSIX_REGEX -- success
+[2025-12-10 22:33:25] [DEBUG] -- Compiling and running to test HAVE_STEADY_CLOCK
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_STEADY_CLOCK -- success
+[2025-12-10 22:33:25] [DEBUG] -- Compiling and running to test HAVE_PTHREAD_AFFINITY
+[2025-12-10 22:33:25] [DEBUG] -- Performing Test HAVE_PTHREAD_AFFINITY -- success
+[2025-12-10 22:33:25] [DEBUG] -- Configuring done (25.0s)
+[2025-12-10 22:33:25] [DEBUG] -- Generating done (17.7s)
+[0;34m[INFO][0m -- Build files have been written to: /home/john/DSMILSystem/toolchains/DSLLVM/build
+[0;34m[INFO][0m -- Configuring done (25.0s)
+[0;34m[INFO][0m -- Generating done (17.7s)
+[0;34m[INFO][0m -- Build files have been written to: /home/john/DSMILSystem/toolchains/DSLLVM/build
+-- The C compiler identification is GNU 15.2.0
+-- The CXX compiler identification is GNU 15.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: /usr/bin/gcc
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Enabling Flang-RT as a dependency of Flang
+CMake Warning at CMakeLists.txt:211 (message):
+  Using LLVM_ENABLE_PROJECTS=openmp is deprecated now, and will become a
+  fatal error in a future release.  Please use -DLLVM_ENABLE_RUNTIMES=openmp
+  or see the instructions at https://openmp.llvm.org/ for building the
+  runtimes.
+
+
+-- bolt project is enabled
+-- clang project is enabled
+-- clang-tools-extra project is enabled
+-- compiler-rt project is disabled
+-- cross-project-tests project is disabled
+-- libclc project is disabled
+-- lld project is enabled
+-- lldb project is enabled
+-- mlir project is enabled
+-- openmp project is enabled
+-- polly project is enabled
+-- flang project is enabled
+-- libc project is disabled
+-- Enabling compiler-rt as a dependency of Flang
+-- Found Python3: /usr/bin/python3 (found suitable version "3.13.9", minimum required is "3.8") found components: Interpreter
+-- Looking for __GLIBC__
+-- Looking for __GLIBC__ - found
+-- Looking for valgrind/valgrind.h
+-- Looking for valgrind/valgrind.h - not found
+-- Looking for FE_ALL_EXCEPT
+-- Looking for FE_ALL_EXCEPT - found
+-- Looking for FE_INEXACT
+-- Looking for FE_INEXACT - found
+-- Performing Test HAVE_BUILTIN_THREAD_POINTER
+-- Performing Test HAVE_BUILTIN_THREAD_POINTER - Success
+-- Looking for CrashReporterClient.h
+-- Looking for CrashReporterClient.h - not found
+-- Looking for linux/magic.h
+-- Looking for linux/magic.h - found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Looking for pthread_rwlock_init in pthread
+-- Looking for pthread_rwlock_init in pthread - found
+-- Looking for pthread_mutex_lock in pthread
+-- Looking for pthread_mutex_lock in pthread - found
+-- Looking for dlopen in dl
+-- Looking for dlopen in dl - found
+-- Looking for shm_open in rt
+-- Looking for shm_open in rt - found
+-- Looking for pfm_initialize in pfm
+-- Looking for pfm_initialize in pfm - not found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3.1")
+-- Looking for compress2
+-- Looking for compress2 - found
+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.15.1")
+-- Looking for xmlReadMemory
+-- Looking for xmlReadMemory - found
+-- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+-- Looking for arc4random
+-- Looking for arc4random - found
+-- Looking for backtrace
+-- Looking for backtrace - found
+-- backtrace facility detected in default set of libraries
+-- Found Backtrace: /usr/include
+-- Performing Test C_SUPPORTS_WERROR_UNGUARDED_AVAILABILITY_NEW
+-- Performing Test C_SUPPORTS_WERROR_UNGUARDED_AVAILABILITY_NEW - Failed
+-- Looking for __register_frame
+-- Looking for __register_frame - found
+-- Looking for __deregister_frame
+-- Looking for __deregister_frame - found
+-- Looking for __unw_add_dynamic_fde
+-- Looking for __unw_add_dynamic_fde - not found
+-- Looking for _Unwind_Backtrace
+-- Looking for _Unwind_Backtrace - found
+-- Looking for getpagesize
+-- Looking for getpagesize - found
+-- Looking for sysconf
+-- Looking for sysconf - found
+-- Looking for getrusage
+-- Looking for getrusage - found
+-- Looking for isatty
+-- Looking for isatty - found
+-- Looking for futimens
+-- Looking for futimens - found
+-- Looking for futimes
+-- Looking for futimes - found
+-- Looking for getauxval
+-- Looking for getauxval - found
+-- Looking for sigaltstack
+-- Looking for sigaltstack - found
+-- Looking for mallctl
+-- Looking for mallctl - not found
+-- Looking for mallinfo
+-- Looking for mallinfo - found
+-- Looking for mallinfo2
+-- Looking for mallinfo2 - found
+-- Looking for malloc_zone_statistics
+-- Looking for malloc_zone_statistics - not found
+-- Looking for posix_spawn
+-- Looking for posix_spawn - found
+-- Looking for pread
+-- Looking for pread - found
+-- Looking for sbrk
+-- Looking for sbrk - found
+-- Looking for strerror_r
+-- Looking for strerror_r - found
+-- Looking for strerror_s
+-- Looking for strerror_s - not found
+-- Looking for setenv
+-- Looking for setenv - found
+-- Performing Test HAVE_STRUCT_STAT_ST_MTIMESPEC_TV_NSEC
+-- Performing Test HAVE_STRUCT_STAT_ST_MTIMESPEC_TV_NSEC - Failed
+-- Performing Test HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC
+-- Performing Test HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC - Success
+-- Looking for pthread_getname_np
+-- Looking for pthread_getname_np - found
+-- Looking for pthread_setname_np
+-- Looking for pthread_setname_np - found
+-- Looking for pthread_get_name_np
+-- Looking for pthread_get_name_np - not found
+-- Looking for pthread_set_name_np
+-- Looking for pthread_set_name_np - not found
+-- Looking for dlopen
+-- Looking for dlopen - found
+-- Looking for proc_pid_rusage
+-- Looking for proc_pid_rusage - not found
+-- Performing Test HAVE_CXX_ATOMICS_WITHOUT_LIB
+-- Performing Test HAVE_CXX_ATOMICS_WITHOUT_LIB - Success
+-- Performing Test HAVE_CXX_ATOMICS64_WITHOUT_LIB
+-- Performing Test HAVE_CXX_ATOMICS64_WITHOUT_LIB - Success
+-- Performing Test LLVM_HAS_ATOMICS
+-- Performing Test LLVM_HAS_ATOMICS - Success
+-- LLVM host triple: x86_64-unknown-linux-gnu
+-- Native target architecture is X86
+-- Threads enabled.
+-- Doxygen disabled.
+-- Ninja version: 1.13.2
+-- Could NOT find OCaml (missing: OCAMLFIND OCAML_VERSION OCAML_STDLIB_PATH) 
+-- Could NOT find OCaml (missing: OCAMLFIND OCAML_VERSION OCAML_STDLIB_PATH) 
+-- OCaml bindings disabled.
+-- Found Python module pygments
+-- Found Python module pygments.lexers.c_cpp
+-- Found Python module yaml
+-- LLVM default target triple: x86_64-unknown-linux-gnu
+-- Performing Test LLVM_USES_LIBSTDCXX
+-- Performing Test LLVM_USES_LIBSTDCXX - Success
+-- Performing Test LLVM_DEFAULT_TO_GLIBCXX_USE_CXX11_ABI
+-- Performing Test LLVM_DEFAULT_TO_GLIBCXX_USE_CXX11_ABI - Success
+-- Performing Test C_SUPPORTS_FPIC
+-- Performing Test C_SUPPORTS_FPIC - Success
+-- Performing Test CXX_SUPPORTS_FPIC
+-- Performing Test CXX_SUPPORTS_FPIC - Success
+-- Building with -fPIC
+-- Performing Test C_SUPPORTS_FNO_SEMANTIC_INTERPOSITION
+-- Performing Test C_SUPPORTS_FNO_SEMANTIC_INTERPOSITION - Success
+-- Performing Test CXX_SUPPORTS_FNO_SEMANTIC_INTERPOSITION
+-- Performing Test CXX_SUPPORTS_FNO_SEMANTIC_INTERPOSITION - Success
+-- Performing Test SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG
+-- Performing Test SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG - Success
+-- Performing Test C_SUPPORTS_CXX98_COMPAT_EXTRA_SEMI_FLAG
+-- Performing Test C_SUPPORTS_CXX98_COMPAT_EXTRA_SEMI_FLAG - Failed
+-- Performing Test CXX_SUPPORTS_CXX98_COMPAT_EXTRA_SEMI_FLAG
+-- Performing Test CXX_SUPPORTS_CXX98_COMPAT_EXTRA_SEMI_FLAG - Failed
+-- Performing Test CXX_SUPPORTS_SUGGEST_OVERRIDE_FLAG
+-- Performing Test CXX_SUPPORTS_SUGGEST_OVERRIDE_FLAG - Success
+-- Performing Test CXX_WSUGGEST_OVERRIDE_ALLOWS_ONLY_FINAL
+-- Performing Test CXX_WSUGGEST_OVERRIDE_ALLOWS_ONLY_FINAL - Success
+-- Performing Test C_WCOMMENT_ALLOWS_LINE_WRAP
+-- Performing Test C_WCOMMENT_ALLOWS_LINE_WRAP - Failed
+-- Performing Test C_SUPPORTS_CTAD_MAYBE_UNSPPORTED_FLAG
+-- Performing Test C_SUPPORTS_CTAD_MAYBE_UNSPPORTED_FLAG - Failed
+-- Performing Test CXX_SUPPORTS_CTAD_MAYBE_UNSPPORTED_FLAG
+-- Performing Test CXX_SUPPORTS_CTAD_MAYBE_UNSPPORTED_FLAG - Success
+-- Performing Test LINKER_SUPPORTS_COLOR_DIAGNOSTICS
+-- Performing Test LINKER_SUPPORTS_COLOR_DIAGNOSTICS - Failed
+-- Looking for os_signpost_interval_begin
+-- Looking for os_signpost_interval_begin - not found
+-- Looking for flock
+-- Looking for flock - found
+-- Linker detection: GNU ld
+-- Performing Test LLVM_LINKER_SUPPORTS_B_SYMBOLIC_FUNCTIONS
+-- Performing Test LLVM_LINKER_SUPPORTS_B_SYMBOLIC_FUNCTIONS - Success
+-- Performing Test HAS_WERROR_GLOBAL_CTORS
+-- Performing Test HAS_WERROR_GLOBAL_CTORS - Failed
+-- Looking for __x86_64__
+-- Looking for __x86_64__ - found
+-- Found Git: /usr/bin/git (found version "2.51.0")
+-- Looking for logf128
+-- Looking for logf128 - found
+-- Targeting AArch64
+-- Targeting AMDGPU
+-- Targeting ARM
+-- Targeting AVR
+-- Targeting BPF
+-- Targeting Hexagon
+-- Targeting Lanai
+-- Targeting LoongArch
+-- Targeting Mips
+-- Targeting MSP430
+-- Targeting NVPTX
+-- Targeting PowerPC
+-- Targeting RISCV
+-- Targeting Sparc
+-- Targeting SPIRV
+-- Targeting SystemZ
+-- Targeting VE
+-- Targeting WebAssembly
+-- Targeting X86
+-- Targeting XCore
+-- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
+-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.5.4")
+-- Checking for module 'tss2-sys'
+--   Found tss2-sys, version 4.1.3
+-- Checking for module 'tss2-tcti-device'
+--   Found tss2-tcti-device, version 4.1.3
+-- Checking for module 'liboqs'
+--   Found liboqs, version 0.15.0
+-- Performing Test OPENMP_HAVE_WALL_FLAG
+-- Performing Test OPENMP_HAVE_WALL_FLAG - Success
+-- Performing Test OPENMP_HAVE_WERROR_FLAG
+-- Performing Test OPENMP_HAVE_WERROR_FLAG - Success
+-- Performing Test OPENMP_HAVE_COLOR_DIAGNOSTICS
+-- Performing Test OPENMP_HAVE_COLOR_DIAGNOSTICS - Failed
+-- Performing Test OPENMP_HAVE_WCAST_QUAL_FLAG
+-- Performing Test OPENMP_HAVE_WCAST_QUAL_FLAG - Success
+-- Performing Test OPENMP_HAVE_WFORMAT_PEDANTIC_FLAG
+-- Performing Test OPENMP_HAVE_WFORMAT_PEDANTIC_FLAG - Failed
+-- Performing Test OPENMP_HAVE_WIMPLICIT_FALLTHROUGH_FLAG
+-- Performing Test OPENMP_HAVE_WIMPLICIT_FALLTHROUGH_FLAG - Success
+-- Performing Test OPENMP_HAVE_WSIGN_COMPARE_FLAG
+-- Performing Test OPENMP_HAVE_WSIGN_COMPARE_FLAG - Success
+-- Performing Test OPENMP_HAVE_WEXTRA_FLAG
+-- Performing Test OPENMP_HAVE_WEXTRA_FLAG - Success
+-- Performing Test OPENMP_HAVE_WPEDANTIC_FLAG
+-- Performing Test OPENMP_HAVE_WPEDANTIC_FLAG - Success
+-- Performing Test OPENMP_HAVE_WMAYBE_UNINITIALIZED_FLAG
+-- Performing Test OPENMP_HAVE_WMAYBE_UNINITIALIZED_FLAG - Success
+-- Performing Test OPENMP_HAVE_NO_SEMANTIC_INTERPOSITION
+-- Performing Test OPENMP_HAVE_NO_SEMANTIC_INTERPOSITION - Success
+-- Performing Test OPENMP_HAVE_FUNCTION_SECTIONS
+-- Performing Test OPENMP_HAVE_FUNCTION_SECTIONS - Failed
+-- Performing Test OPENMP_HAVE_DATA_SECTIONS
+-- Performing Test OPENMP_HAVE_DATA_SECTIONS - Success
+-- Building omp_lib.mod disabled by RUNTIMES_FLANG_MODULES_ENABLED=''; libomp-mod does nothing
+-- Performing Test LIBOMP_HAVE_FNO_EXCEPTIONS_FLAG
+-- Performing Test LIBOMP_HAVE_FNO_EXCEPTIONS_FLAG - Success
+-- Performing Test LIBOMP_HAVE_FNO_RTTI_FLAG
+-- Performing Test LIBOMP_HAVE_FNO_RTTI_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WCLASS_MEMACCESS_FLAG
+-- Performing Test LIBOMP_HAVE_WCLASS_MEMACCESS_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WCOVERED_SWITCH_DEFAULT_FLAG
+-- Performing Test LIBOMP_HAVE_WCOVERED_SWITCH_DEFAULT_FLAG - Failed
+-- Performing Test LIBOMP_HAVE_WFRAME_ADDRESS_FLAG
+-- Performing Test LIBOMP_HAVE_WFRAME_ADDRESS_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WSTRICT_ALIASING_FLAG
+-- Performing Test LIBOMP_HAVE_WSTRICT_ALIASING_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WSTRINGOP_OVERFLOW_FLAG
+-- Performing Test LIBOMP_HAVE_WSTRINGOP_OVERFLOW_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WSTRINGOP_TRUNCATION_FLAG
+-- Performing Test LIBOMP_HAVE_WSTRINGOP_TRUNCATION_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WSWITCH_FLAG
+-- Performing Test LIBOMP_HAVE_WSWITCH_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WUNINITIALIZED_FLAG
+-- Performing Test LIBOMP_HAVE_WUNINITIALIZED_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WRETURN_TYPE_C_LINKAGE_FLAG
+-- Performing Test LIBOMP_HAVE_WRETURN_TYPE_C_LINKAGE_FLAG - Failed
+-- Performing Test LIBOMP_HAVE_WCAST_QUAL_FLAG
+-- Performing Test LIBOMP_HAVE_WCAST_QUAL_FLAG - Success
+-- Performing Test LIBOMP_HAVE_WINT_TO_VOID_POINTER_CAST_FLAG
+-- Performing Test LIBOMP_HAVE_WINT_TO_VOID_POINTER_CAST_FLAG - Failed
+-- Performing Test LIBOMP_HAVE_MSSE2_FLAG
+-- Performing Test LIBOMP_HAVE_MSSE2_FLAG - Success
+-- Performing Test LIBOMP_HAVE_FTLS_MODEL_FLAG
+-- Performing Test LIBOMP_HAVE_FTLS_MODEL_FLAG - Success
+-- Performing Test LIBOMP_HAVE_MMIC_FLAG
+-- Performing Test LIBOMP_HAVE_MMIC_FLAG - Failed
+-- Performing Test LIBOMP_HAVE_M32_FLAG
+-- Performing Test LIBOMP_HAVE_M32_FLAG - Failed
+-- Looking for pthread_setname_np
+-- Looking for pthread_setname_np - found
+-- Looking for pthread_set_name_np
+-- Looking for pthread_set_name_np - not found
+-- Looking for shm_open
+-- Looking for shm_open - found
+-- Looking for xmmintrin.h
+-- Looking for xmmintrin.h - found
+-- Performing Test LIBOMP_HAVE__MM_MALLOC
+-- Performing Test LIBOMP_HAVE__MM_MALLOC - Success
+-- Looking for aligned_alloc
+-- Looking for aligned_alloc - found
+-- Looking for posix_memalign
+-- Looking for posix_memalign - found
+-- Looking for _aligned_malloc
+-- Looking for _aligned_malloc - not found
+-- Performing Test LIBOMP_HAVE_X_FLAG
+-- Performing Test LIBOMP_HAVE_X_FLAG - Success
+-- Performing Test LIBOMP_HAVE_AS_NEEDED_FLAG
+-- Performing Test LIBOMP_HAVE_AS_NEEDED_FLAG - Success
+-- Performing Test LIBOMP_HAVE_VERSION_SCRIPT_FLAG
+-- Performing Test LIBOMP_HAVE_VERSION_SCRIPT_FLAG - Success
+-- Performing Test LIBOMP_HAVE_STATIC_LIBGCC_FLAG
+-- Performing Test LIBOMP_HAVE_STATIC_LIBGCC_FLAG - Success
+-- Performing Test LIBOMP_HAVE_Z_NOEXECSTACK_FLAG
+-- Performing Test LIBOMP_HAVE_Z_NOEXECSTACK_FLAG - Success
+-- Looking for immintrin.h
+-- Looking for immintrin.h - found
+-- Performing Test LIBOMP_HAVE_ATTRIBUTE_RTM
+-- Performing Test LIBOMP_HAVE_ATTRIBUTE_RTM - Success
+-- Performing Test LIBOMP_HAVE_ATTRIBUTE_WAITPKG
+-- Performing Test LIBOMP_HAVE_ATTRIBUTE_WAITPKG - Success
+-- Performing Test LIBOMP_HAVE_WAITPKG_INTRINSICS
+-- Performing Test LIBOMP_HAVE_WAITPKG_INTRINSICS - Success
+-- Performing Test LIBOMP_HAVE_RTM_INTRINSICS
+-- Performing Test LIBOMP_HAVE_RTM_INTRINSICS - Success
+-- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+-- Performing Test LIBOMP_HAVE_VERSION_SYMBOLS
+-- Performing Test LIBOMP_HAVE_VERSION_SYMBOLS - Success
+-- Performing Test LIBOMP_HAVE___BUILTIN_FRAME_ADDRESS
+-- Performing Test LIBOMP_HAVE___BUILTIN_FRAME_ADDRESS - Success
+-- Performing Test LIBOMP_HAVE_WEAK_ATTRIBUTE
+-- Performing Test LIBOMP_HAVE_WEAK_ATTRIBUTE - Success
+-- Performing Test LIBOMP_HAVE_PSAPI
+-- Performing Test LIBOMP_HAVE_PSAPI - Failed
+-- Looking for sqrt in m
+-- Looking for sqrt in m - found
+-- Looking for __atomic_load_1
+-- Looking for __atomic_load_1 - not found
+-- Looking for __atomic_load_1 in atomic
+-- Looking for __atomic_load_1 in atomic - found
+-- Looking for __atomic_load_1
+-- Looking for __atomic_load_1 - not found
+-- Looking for __atomic_load_1 in atomic
+-- Looking for __atomic_load_1 in atomic - found
+-- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter Development Development.Module Development.Embed
+-- LLD version: 22.0.0
+-- Performing Test C_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION
+-- Performing Test C_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION - Success
+-- Performing Test C_SUPPORTS_WUNDEF
+-- Performing Test C_SUPPORTS_WUNDEF - Success
+-- Performing Test C_SUPPORTS_WERROR_MISMATCHED_TAGS
+-- Performing Test C_SUPPORTS_WERROR_MISMATCHED_TAGS - Failed
+-- Performing Test C_SUPPORTS_WERROR_GLOBAL_CONSTRUCTOR
+-- Performing Test C_SUPPORTS_WERROR_GLOBAL_CONSTRUCTOR - Failed
+-- Performing Test CXX_SUPPORTS_WERROR_GLOBAL_CONSTRUCTOR
+-- Performing Test CXX_SUPPORTS_WERROR_GLOBAL_CONSTRUCTOR - Failed
+-- Could not find nvcc, please set CUDAToolkit_ROOT.
+-- Performing Test COMPILER_SUPPORTS_WARNING_WEAK_VTABLES
+-- Performing Test COMPILER_SUPPORTS_WARNING_WEAK_VTABLES - Failed
+-- Looking for sys/resource.h
+-- Looking for sys/resource.h - found
+-- Looking for dlfcn.h
+-- Looking for dlfcn.h - found
+-- Looking for dladdr
+-- Looking for dladdr - found
+-- Clang version: 22.0.0git
+-- Looking for include file sys/inotify.h
+-- Looking for include file sys/inotify.h - found
+-- Performing Test HAVE_LINKER_FLAG_LONG_PLT
+-- Performing Test HAVE_LINKER_FLAG_LONG_PLT - Failed
+-- Found Perl: /usr/bin/perl (found version "5.40.1")
+-- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+-- Found Python3: /usr/bin/python3 (found suitable version "3.13.9", minimum required is "3.8") found components: Interpreter
+-- Flang version: 22.0.0
+-- Performing Test CXX_SUPPORTS_NO_DEPRECATED_COPY_FLAG
+-- Performing Test CXX_SUPPORTS_NO_DEPRECATED_COPY_FLAG - Success
+-- Performing Test CXX_SUPPORTS_NO_STRING_CONVERSION_FLAG
+-- Performing Test CXX_SUPPORTS_NO_STRING_CONVERSION_FLAG - Failed
+-- Performing Test CXX_SUPPORTS_NO_CTAD_MAYBE_UNSUPPORTED_FLAG
+-- Performing Test CXX_SUPPORTS_NO_CTAD_MAYBE_UNSUPPORTED_FLAG - Success
+-- Performing Test CXX_SUPPORTS_NO_NESTED_ANON_TYPES_FLAG
+-- Performing Test CXX_SUPPORTS_NO_NESTED_ANON_TYPES_FLAG - Failed
+-- Performing Test HAVE_LDBL_MANT_DIG_113
+-- Performing Test HAVE_LDBL_MANT_DIG_113 - Failed
+-- Looking for quadmath.h
+-- Looking for quadmath.h - found
+-- quadmath.h found without additional include paths
+-- Looking for sinq in quadmath
+-- Looking for sinq in quadmath - found
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Could NOT find SWIG (missing: SWIG_EXECUTABLE SWIG_DIR) (Required is at least version "4")
+-- Enable SWIG to generate LLDB bindings: FALSE
+-- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+-- Enable editline support in LLDB: FALSE
+-- Looking for acs_map
+-- Looking for acs_map - found
+-- Found CursesAndPanel: /usr/include
+-- Enable curses support in LLDB: TRUE
+-- Looking for lzma_auto_decoder in /usr/lib/x86_64-linux-gnu/liblzma.so
+-- Looking for lzma_auto_decoder in /usr/lib/x86_64-linux-gnu/liblzma.so - found
+-- Looking for lzma_easy_encoder in /usr/lib/x86_64-linux-gnu/liblzma.so
+-- Looking for lzma_easy_encoder in /usr/lib/x86_64-linux-gnu/liblzma.so - found
+-- Looking for lzma_lzma_preset in /usr/lib/x86_64-linux-gnu/liblzma.so
+-- Looking for lzma_lzma_preset in /usr/lib/x86_64-linux-gnu/liblzma.so - found
+-- Found LibLZMA: /usr/lib/x86_64-linux-gnu/liblzma.so (found version "5.8.1")
+-- Enable LZMA compression support in LLDB: TRUE
+-- SWIG 4 or later is required for Lua support in LLDB but could not be found
+-- Could NOT find LuaAndSwig (missing: LUA_EXECUTABLE LUA_LIBRARIES LUA_INCLUDE_DIR LUA_VERSION_MINOR LUA_VERSION_MAJOR LLDB_ENABLE_SWIG) 
+-- Enable Lua scripting support in LLDB: FALSE
+-- SWIG 4 or later is required for Python support in LLDB but could not be found
+-- Could NOT find PythonAndSwig (missing: Python3_LIBRARIES Python3_INCLUDE_DIRS LLDB_ENABLE_SWIG) 
+-- Enable Python scripting support in LLDB: FALSE
+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found suitable version "2.15.1", minimum required is "2.8")
+-- Enable Libxml 2 support in LLDB: TRUE
+-- Enable libfbsdvmcore support in LLDB: 0
+-- Found Python3: /usr/bin/python3 (found version "3.13.9") found components: Interpreter
+-- Performing Test CXX_SUPPORTS_STRINGOP_TRUNCATION
+-- Performing Test CXX_SUPPORTS_STRINGOP_TRUNCATION - Success
+-- LLDB version: 22.0.0git
+-- Looking for ppoll
+-- Looking for ppoll - found
+-- Looking for ptsname_r
+-- Looking for ptsname_r - found
+-- Looking for accept4
+-- Looking for accept4 - found
+-- Looking for termios.h
+-- Looking for termios.h - found
+-- Looking for include files sys/types.h, sys/event.h
+-- Looking for include files sys/types.h, sys/event.h - not found
+-- Looking for process_vm_readv
+-- Looking for process_vm_readv - found
+-- Looking for __NR_process_vm_readv
+-- Looking for __NR_process_vm_readv - found
+-- Looking for compression_encode_buffer in compression
+-- Looking for compression_encode_buffer in compression - not found
+-- Skipping FreeBSDKernel plugin due to missing libfbsdvmcore
+-- Symbols (liblldb): exporting all symbols from the lldb namespace
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Found make: /usr/bin/gmake
+-- Found dirname: /usr/bin/dirname
+-- Performing Test CXX_SUPPORTS_DOCUMENTATION
+-- Performing Test CXX_SUPPORTS_DOCUMENTATION - Failed
+-- Performing Test CXX_SUPPORTS_NO_DOCUMENTATION_DEPRECATED_SYNC
+-- Performing Test CXX_SUPPORTS_NO_DOCUMENTATION_DEPRECATED_SYNC - Success
+-- Looking for gettid
+-- Looking for gettid - found
+-- Targeting AArch64 in llvm-bolt
+-- Targeting X86 in llvm-bolt
+-- Targeting RISCV in llvm-bolt
+-- Building BOLT runtime libraries for x86_64
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- ISL version: isl-0.25-193-g8621c60c
+-- Performing Test HAS_ATTRIBUTE_WARN_UNUSED_RESULT
+-- Performing Test HAS_ATTRIBUTE_WARN_UNUSED_RESULT - Success
+-- Performing Test HAVE___ATTRIBUTE__
+-- Performing Test HAVE___ATTRIBUTE__ - Success
+-- Performing Test HAVE_DECL_FFS
+-- Performing Test HAVE_DECL_FFS - Success
+-- Performing Test HAVE_DECL___BUILTIN_FFS
+-- Performing Test HAVE_DECL___BUILTIN_FFS - Success
+-- Performing Test HAVE_DECL__BITSCANFORWARD
+-- Performing Test HAVE_DECL__BITSCANFORWARD - Failed
+-- Performing Test HAVE_DECL_STRCASECMP
+-- Performing Test HAVE_DECL_STRCASECMP - Success
+-- Performing Test HAVE_DECL__STRICMP
+-- Performing Test HAVE_DECL__STRICMP - Failed
+-- Performing Test HAVE_DECL_STRNCASECMP
+-- Performing Test HAVE_DECL_STRNCASECMP - Success
+-- Performing Test HAVE_DECL__STRNICMP
+-- Performing Test HAVE_DECL__STRNICMP - Failed
+-- Performing Test HAVE_DECL_SNPRINTF
+-- Performing Test HAVE_DECL_SNPRINTF - Success
+-- Performing Test HAVE_DECL__SNPRINTF
+-- Performing Test HAVE_DECL__SNPRINTF - Failed
+-- Performing Test HAVE_UINT8T
+-- Performing Test HAVE_UINT8T - Failed
+-- Performing Test HAVE_STDINT_H
+-- Performing Test HAVE_STDINT_H - Success
+-- Performing Test HAVE_INTTYPES_H
+-- Performing Test HAVE_INTTYPES_H - Success
+-- Performing Test HAVE_SYS_INTTYPES_H
+-- Performing Test HAVE_SYS_INTTYPES_H - Failed
+-- Registering Polly as a pass plugin (static build: ON)
+-- Registering ExampleIRTransforms as a pass plugin (static build: OFF)
+-- Registering Bye as a pass plugin (static build: OFF)
+-- Failed to find LLVM FileCheck
+-- Google Benchmark version: v0.0.0, normalized to 0.0.0
+-- Looking for shm_open in rt
+-- Looking for shm_open in rt - found
+-- Performing Test HAVE_CXX_FLAG_WALL
+-- Performing Test HAVE_CXX_FLAG_WALL - Success
+-- Performing Test HAVE_CXX_FLAG_WEXTRA
+-- Performing Test HAVE_CXX_FLAG_WEXTRA - Success
+-- Performing Test HAVE_CXX_FLAG_WSHADOW
+-- Performing Test HAVE_CXX_FLAG_WSHADOW - Success
+-- Performing Test HAVE_CXX_FLAG_WFLOAT_EQUAL
+-- Performing Test HAVE_CXX_FLAG_WFLOAT_EQUAL - Success
+-- Performing Test HAVE_CXX_FLAG_WOLD_STYLE_CAST
+-- Performing Test HAVE_CXX_FLAG_WOLD_STYLE_CAST - Success
+-- Performing Test HAVE_CXX_FLAG_WSUGGEST_OVERRIDE
+-- Performing Test HAVE_CXX_FLAG_WSUGGEST_OVERRIDE - Success
+-- Performing Test HAVE_CXX_FLAG_PEDANTIC
+-- Performing Test HAVE_CXX_FLAG_PEDANTIC - Success
+-- Performing Test HAVE_CXX_FLAG_PEDANTIC_ERRORS
+-- Performing Test HAVE_CXX_FLAG_PEDANTIC_ERRORS - Success
+-- Performing Test HAVE_CXX_FLAG_WSHORTEN_64_TO_32
+-- Performing Test HAVE_CXX_FLAG_WSHORTEN_64_TO_32 - Failed
+-- Performing Test HAVE_CXX_FLAG_FSTRICT_ALIASING
+-- Performing Test HAVE_CXX_FLAG_FSTRICT_ALIASING - Success
+-- Performing Test HAVE_CXX_FLAG_WNO_DEPRECATED_DECLARATIONS
+-- Performing Test HAVE_CXX_FLAG_WNO_DEPRECATED_DECLARATIONS - Success
+-- Performing Test HAVE_CXX_FLAG_FNO_EXCEPTIONS
+-- Performing Test HAVE_CXX_FLAG_FNO_EXCEPTIONS - Success
+-- Performing Test HAVE_CXX_FLAG_WSTRICT_ALIASING
+-- Performing Test HAVE_CXX_FLAG_WSTRICT_ALIASING - Success
+-- Performing Test HAVE_CXX_FLAG_WD654
+-- Performing Test HAVE_CXX_FLAG_WD654 - Failed
+-- Performing Test HAVE_CXX_FLAG_WTHREAD_SAFETY
+-- Performing Test HAVE_CXX_FLAG_WTHREAD_SAFETY - Failed
+-- Performing Test HAVE_CXX_FLAG_COVERAGE
+-- Performing Test HAVE_CXX_FLAG_COVERAGE - Success
+-- Compiling and running to test HAVE_GNU_POSIX_REGEX
+-- Performing Test HAVE_GNU_POSIX_REGEX -- failed to compile
+-- Compiling and running to test HAVE_POSIX_REGEX
+-- Performing Test HAVE_POSIX_REGEX -- success
+-- Compiling and running to test HAVE_STEADY_CLOCK
+-- Performing Test HAVE_STEADY_CLOCK -- success
+-- Compiling and running to test HAVE_PTHREAD_AFFINITY
+-- Performing Test HAVE_PTHREAD_AFFINITY -- success
+-- Configuring done (25.0s)
+-- Generating done (17.7s)
+-- Build files have been written to: /home/john/DSMILSystem/toolchains/DSLLVM/build
+[0;32m[SUCCESS][0m Configuration complete
+[2025-12-10 22:33:25] [DEBUG] CMake cache saved to: ./build/CMakeCache.txt
+[0;34m[INFO][0m Verifying DSMIL configuration...
+[0;32m[SUCCESS][0m ✓ LLVM_ENABLE_DSMIL=ON
+[0;32m[SUCCESS][0m ✓ DSMIL source directory detected
+[0;32m[SUCCESS][0m ✓ LLVM_ENABLE_RTTI=ON (required for DSMIL)
+[1;33m[WARNING][0m ⚠ LLVM_ENABLE_EH is OFF (may cause issues)
+[0;32m[SUCCESS][0m ✓ Clang project enabled
+[0;32m[SUCCESS][0m All DSMIL configuration checks passed
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Step: Building DSLLVM with Dynamic CPU Throttling
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-10 22:33:25] [DEBUG] Details: 
+[0;34m[INFO][0m Resuming previous build (build state preserved)
+[0;34m[INFO][0m Ninja will skip already-built targets automatically
+[0;34m[INFO][0m This may take 30-120 minutes depending on your system...
+[0;34m[INFO][0m Using initial 10 parallel jobs
+[0;34m[INFO][0m Build log: /home/john/DSMILSystem/toolchains/DSLLVM/dsllvm-install-20251210-223224.log
+[0;34m[INFO][0m Build cache: ./build/.ninja_deps (enables resume)
+[0;34m[INFO][0m Throttling Thresholds: HIGH=105°C, RESUME=90°C
+[0;34m[INFO][0m Throttling Jobs: 60% of base jobs, Cooldown: 180s
+[0;34m[INFO][0m Starting ninja build with 10 jobs.
+[2025-12-10 22:33:25] [DEBUG] Initial ninja PID: 3784994

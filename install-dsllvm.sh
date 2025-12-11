@@ -34,6 +34,10 @@ PREFIX="/usr/local"
 BUILD_DIR="./build"
 BUILD_TYPE="Release"
 JOBS=""
+TEMP_HIGH_THRESHOLD_C=105 # Temperature to trigger throttling (Celsius)
+TEMP_LOW_THRESHOLD_C=90   # Temperature to allow resuming after cooldown (Celsius)
+THROTTLE_JOB_PERCENT=60   # Jobs percentage when throttling (e.g., 60 means 60% of base jobs)
+THROTTLE_COOLDOWN_DURATION=180 # Duration in seconds to maintain throttle after cooldown (Celsius)
 SKIP_BUILD=false
 SKIP_INSTALL=false
 RESUME=false
@@ -107,28 +111,33 @@ done
 
 # Logging functions with file logging
 log_info() {
-    local msg="[$(date +'%Y-%m-%d %H:%M:%S')] [INFO] $*"
+    local msg
+    msg="[$(date +'%Y-%m-%d %H:%M:%S')] [INFO] $*"
     echo -e "${BLUE}[INFO]${NC} $*" | tee -a "$LOG_FILE"
 }
 
 log_success() {
-    local msg="[$(date +'%Y-%m-%d %H:%M:%S')] [SUCCESS] $*"
+    local msg
+    msg="[$(date +'%Y-%m-%d %H:%M:%S')] [SUCCESS] $*"
     echo -e "${GREEN}[SUCCESS]${NC} $*" | tee -a "$LOG_FILE"
 }
 
 log_warning() {
-    local msg="[$(date +'%Y-%m-%d %H:%M:%S')] [WARNING] $*"
+    local msg
+    msg="[$(date +'%Y-%m-%d %H:%M:%S')] [WARNING] $*"
     echo -e "${YELLOW}[WARNING]${NC} $*" | tee -a "$LOG_FILE"
 }
 
 log_error() {
-    local msg="[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR] $*"
+    local msg
+    msg="[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR] $*"
     echo -e "${RED}[ERROR]${NC} $*" | tee -a "$LOG_FILE" >&2
 }
 
 log_debug() {
     if [[ "$VERBOSE" == true ]]; then
-        local msg="[$(date +'%Y-%m-%d %H:%M:%S')] [DEBUG] $*"
+        local msg
+        msg="[$(date +'%Y-%m-%d %H:%M:%S')] [DEBUG] $*"
         echo -e "${YELLOW}[DEBUG]${NC} $*" | tee -a "$LOG_FILE"
     else
         echo "[$(date +'%Y-%m-%d %H:%M:%S')] [DEBUG] $*" >> "$LOG_FILE"
@@ -144,6 +153,39 @@ log_step() {
     log_debug "Details: $*"
 }
 
+# Function to get CPU temperature
+get_cpu_temp() {
+    local temp=0
+    local raw_temp
+    local valid_temp_found=false
+
+    if command -v sensors &> /dev/null; then
+        # Use lm-sensors, redirect stderr to /dev/null to avoid polluting stdout
+        raw_temp=$(sensors -j 2>/dev/null | grep -m 1 '"temp":' | awk '{print $2}' | cut -d'.' -f1)
+        if [[ "$raw_temp" =~ ^[0-9]+$ ]]; then # Validate raw_temp is purely numeric
+            temp="$raw_temp"
+            valid_temp_found=true
+        fi
+    fi
+
+    if [[ "$valid_temp_found" == "false" ]] && [[ -f "/sys/class/thermal/thermal_zone0/temp" ]]; then
+        # Fallback to sysfs if sensors didn't provide a valid temp
+        raw_temp=$(cat /sys/class/thermal/thermal_zone0/temp)
+        if [[ "$raw_temp" =~ ^[0-9]+$ ]]; then # Validate raw_temp is purely numeric
+            temp=$(( raw_temp / 1000 ))
+            valid_temp_found=true
+        fi
+    fi
+
+    if [[ "$valid_temp_found" == "true" ]]; then
+        echo "$temp"
+        return 0
+    else
+        log_warning "Could not determine valid CPU temperature. 'sensors' command (if used) failed to parse and '/sys/class/thermal/thermal_zone0/temp' (if used) was not accessible or valid." >&2
+        return 1
+    fi
+}
+
 # Check if running as root for system installation
 check_root() {
     if [[ "$PREFIX" == "/usr/local" ]] && [[ $EUID -ne 0 ]]; then
@@ -157,10 +199,19 @@ check_prerequisites() {
     log_step "Prerequisites Check"
     
     local missing=()
+    local apt_install_suggestion="sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build python3 git libssl-dev zlib1g-dev"
     
+    # Check for build-essential (general compiler tools)
+    if dpkg -s build-essential &> /dev/null; then
+        log_debug "  ✓ Found build-essential"
+    else
+        log_warning "  ✗ build-essential not found. Suggesting installation."
+        apt_install_suggestion+=" build-essential"
+    fi
+
     # Check for required tools
     log_debug "Checking for required build tools..."
-    for tool in cmake ninja python3 git; do
+    for tool in cmake ninja python3 git; do # Core tools
         if command -v "$tool" &> /dev/null; then
             local version
             version=$("$tool" --version 2>/dev/null | head -n1 || echo "unknown")
@@ -170,16 +221,33 @@ check_prerequisites() {
             log_debug "  ✗ Missing: $tool"
         fi
     done
+
+    # Check for optional tools required for full functionality
+    for tool in sensors; do
+        if command -v "$tool" &> /dev/null; then
+            log_debug "  ✓ Found $tool"
+        else
+            log_warning "  ✗ '$tool' command not found. Adding to install suggestion."
+            apt_install_suggestion+=" $tool"
+        fi
+    done
     
     if [[ ${#missing[@]} -gt 0 ]]; then
-        log_error "Missing required tools: ${missing[*]}"
+        log_error "Missing required core tools: ${missing[*]}"
         log_error ""
         log_error "Install missing dependencies with:"
-        log_error "  sudo apt-get update"
-        log_error "  sudo apt-get install -y build-essential cmake ninja-build python3 git libssl-dev zlib1g-dev"
+        log_error "  $apt_install_suggestion"
         log_error ""
         log_error "Full log saved to: $LOG_FILE"
         exit 1
+    else
+        # If no core tools are missing, but optional ones were added to suggestion
+        log_info "All core build prerequisites met."
+        # Check if the suggestion string changed due to optional tools
+        if [[ "$apt_install_suggestion" != "sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build python3 git libssl-dev zlib1g-dev" ]]; then
+            log_warning "Optional tools are missing (lm-sensors). For full functionality, consider installing:"
+            log_warning "  $apt_install_suggestion"
+        fi
     fi
     
     # Check CMake version (need 3.20+)
@@ -214,16 +282,50 @@ check_prerequisites() {
     
     log_success "All prerequisites met"
 }
-
 # Detect number of CPU cores
+# Function to get P-core count heuristically
+get_p_core_count() {
+    # User-requested override: Set JOBS count to 10 (half of total logical CPUs)
+    echo "10"
+    return 0
+
+    # Original heuristic:
+    # local logical_cpus=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
+    # local physical_cores=$(lscpu | grep '^Core(s) per socket:' | awk '{print $4}')
+    # local p_cores=0
+
+    # if [[ -n "$logical_cpus" ]] && [[ -n "$physical_cores" ]]; then
+    #     # Heuristic: Assuming P-cores are hyperthreaded (2 threads/core) and E-cores are not (1 thread/core)
+    #     # num_p_cores = (Total logical CPUs) - (Total physical cores)
+    #     p_cores=$(( logical_cpus - physical_cores ))
+    #     if [[ "$p_cores" -lt 1 ]]; then # Ensure at least 1 p-core if it's a P-core machine
+    #         p_cores=1
+    #     fi
+    #     echo "$p_cores"
+    #     return 0
+    # fi
+    # echo "0"
+    # return 1
+}
+
 detect_jobs() {
     if [[ -z "$JOBS" ]]; then
-        if command -v nproc &> /dev/null; then
+        local p_cores
+        p_cores=$(get_p_core_count)
+        if [[ "$p_cores" -gt 0 ]]; then
+            JOBS="$p_cores"
+            log_info "Detected $p_cores P-cores. Setting build jobs to P-core count."
+            log_info "  (Heuristic: Assumes P-cores are hyperthreaded, E-cores are not)."
+            log_info "  (Total logical CPUs - Total physical cores = P-cores)"
+        elif command -v nproc &> /dev/null; then
             JOBS=$(nproc)
+            log_info "Could not detect P-cores. Using total logical CPUs: $JOBS."
         elif [[ -f /proc/cpuinfo ]]; then
             JOBS=$(grep -c processor /proc/cpuinfo)
+            log_info "Could not detect P-cores. Using total logical CPUs from /proc/cpuinfo: $JOBS."
         else
             JOBS=4
+            log_warning "Could not auto-detect CPU cores. Defaulting to 4 jobs."
         fi
     fi
     log_info "Using $JOBS parallel build jobs"
@@ -302,7 +404,8 @@ backup_existing_llvm() {
     
     log_info "Checking for existing LLVM installation..."
     
-    local backup_dir="/opt/llvm-backup-$(date +%Y%m%d-%H%M%S)"
+    local backup_dir
+    backup_dir="/opt/llvm-backup-$(date +%Y%m%d-%H%M%S)"
     local backed_up=false
     
     # Check for system LLVM tools
@@ -349,7 +452,7 @@ configure_build() {
     
     # Determine all available projects
     # Enable all major projects for comprehensive build
-    local projects="clang;clang-tools-extra;lld;lldb;mlir;flang;compiler-rt;libcxx;libcxxabi;libunwind;openmp;polly;bolt"
+    local projects="clang;clang-tools-extra;lld;lldb;mlir;flang;openmp;polly;bolt"
     
     # Determine all targets (build for native + common targets)
     local targets="all"
@@ -387,7 +490,7 @@ configure_build() {
         -DLLVM_ENABLE_DSMIL=ON
         # LLVM Core Options
         -DLLVM_ENABLE_ASSERTIONS=OFF
-        -DLLVM_ENABLE_EH=ON
+        -DLLVM_ENABLE_EH=OFF
         -DLLVM_ENABLE_RTTI=ON
         -DLLVM_ENABLE_TERMINFO=ON
         -DLLVM_ENABLE_ZLIB=ON
@@ -404,9 +507,9 @@ configure_build() {
         -DLLVM_ENABLE_BACKTRACES=ON
         -DLLVM_ENABLE_UNWIND_TABLES=ON
         -DLLVM_ENABLE_CRASH_OVERRIDES=ON
-        # Compiler Configuration
-        -DCMAKE_C_COMPILER=clang
-        -DCMAKE_CXX_COMPILER=clang++
+        # Compiler Configuration - Force GCC for bootstrap
+        -DCMAKE_C_COMPILER=gcc
+        -DCMAKE_CXX_COMPILER=g++
         # Enable all optional features (required for DSMIL)
         -DLLVM_ENABLE_PIC=ON
         -DLLVM_ENABLE_PLUGINS=ON
@@ -497,12 +600,12 @@ configure_build() {
     # Verify DSMIL and all features are enabled
     if [[ -f "$BUILD_DIR/CMakeCache.txt" ]]; then
         log_info "Verifying DSMIL configuration..."
-        local dsmil_enabled=false
+        # local dsmil_enabled=false # Removed: variable is unused
         local issues=0
         
         if grep -q "LLVM_ENABLE_DSMIL:BOOL=ON" "$BUILD_DIR/CMakeCache.txt"; then
             log_success "✓ LLVM_ENABLE_DSMIL=ON"
-            dsmil_enabled=true
+            # dsmil_enabled=true # Removed: variable is unused
         else
             log_error "✗ LLVM_ENABLE_DSMIL is not ON"
             ((issues++))
@@ -692,9 +795,9 @@ build_dsllvm() {
         log_warning "Skipping build step"
         return
     fi
-    
-    log_step "Building DSLLVM"
-    
+
+    log_step "Building DSLLVM with Dynamic CPU Throttling"
+
     # Check if we're resuming
     local build_ninja="$BUILD_DIR/build.ninja"
     local ninja_deps="$BUILD_DIR/.ninja_deps"
@@ -704,131 +807,158 @@ build_dsllvm() {
     else
         log_info "Starting fresh build"
     fi
-    
+
     log_info "This may take 30-120 minutes depending on your system..."
-    log_info "Using $JOBS parallel jobs"
+    log_info "Using initial $JOBS parallel jobs"
     log_info "Build log: $LOG_FILE"
-    log_info "Build cache: $BUILD_DIR/.ninja_deps (enables resume)"
-    
+    log_info "Build cache: ./build/.ninja_deps (enables resume)"
+    log_info "Throttling Thresholds: HIGH=${TEMP_HIGH_THRESHOLD_C}°C, RESUME=${TEMP_LOW_THRESHOLD_C}°C"
+    log_info "Throttling Jobs: ${THROTTLE_JOB_PERCENT}% of base jobs, Cooldown: ${THROTTLE_COOLDOWN_DURATION}s"
+
     if [[ "$DRY_RUN" == true ]]; then
         log_info "Would run: ninja -C $BUILD_DIR -j$JOBS"
         return
     fi
-    
-    local start_time
-    start_time=$(date +%s)
+
+    local start_total_time
+    start_total_time=$(date +%s)
     local build_log="$BUILD_DIR/build.log"
+    local build_exit_code=0
     
-    # Progress tracking
-    local last_progress=""
-    local progress_count=0
-    
-    log_info "Starting build..."
-    
-    if [[ "$VERBOSE" == true ]]; then
-        # Verbose: show all output
-        if ninja -C "$BUILD_DIR" -j"$JOBS" 2>&1 | tee -a "$LOG_FILE" "$build_log"; then
-            local build_exit_code=0
-        else
-            local build_exit_code=${PIPESTATUS[0]}
+    local BASE_JOBS=$JOBS # Store original jobs count
+    local CURRENT_NINJA_PID=0
+    local CURRENT_NINJA_JOBS=$BASE_JOBS
+    local THROTTLING_ACTIVE=false
+    local THROTTLE_START_TIME=0
+    local MONITOR_INTERVAL_S=5 # How often to check temperature and restart ninja
+    local BUILD_FINISHED=false
+
+    # --- Start initial ninja process ---
+    log_info "Starting ninja build with $BASE_JOBS jobs."
+    ninja -C "$BUILD_DIR" -j"$BASE_JOBS" 2>&1 | tee -a "$build_log" >&1 &
+    CURRENT_NINJA_PID=$!
+    log_debug "Initial ninja PID: $CURRENT_NINJA_PID"
+    # --- End initial ninja process ---
+
+    # --- Main Build Monitoring Loop ---
+    while ! $BUILD_FINISHED; do
+        local CURRENT_TIME=$(date +%s)
+        local CURRENT_TEMP
+        
+        # Check if ninja process is still running
+        if ! kill -0 "$CURRENT_NINJA_PID" &> /dev/null; then
+            # Ninja process finished or crashed
+            wait "$CURRENT_NINJA_PID" 2>/dev/null
+            build_exit_code=$? # Get its exit code
+            BUILD_FINISHED=true
+            break # Exit monitoring loop
         fi
-    else
-        # Non-verbose: show progress with updates
-        log_info "Building (progress will be shown periodically)..."
-        
-        # Run ninja with progress monitoring
-        local build_exit_code=0
-        local build_pid=0
-        
-        # Start build in background and monitor progress
-        (
-            ninja -C "$BUILD_DIR" -j"$JOBS" > "$build_log" 2>&1
-            echo $? > "$BUILD_DIR/.build_exit_code"
-        ) &
-        build_pid=$!
-        
-        # Monitor progress
-        local last_line=""
-        while kill -0 $build_pid 2>/dev/null; do
-            sleep 5
-            if [[ -f "$build_log" ]]; then
-                # Get latest progress line
-                local current_line
-                current_line=$(tail -n 1 "$build_log" 2>/dev/null | grep -oE "\[[0-9]+/[0-9]+\].*" || echo "")
-                if [[ -n "$current_line" ]] && [[ "$current_line" != "$last_line" ]]; then
-                    local elapsed_now
-                    elapsed_now=$(($(date +%s) - start_time))
-                    echo -ne "\r${BLUE}[BUILD]${NC} $current_line (${elapsed_now}s elapsed)"
-                    last_line="$current_line"
+
+        # Get CPU Temperature
+        if ! CURRENT_TEMP=$(get_cpu_temp); then
+            log_warning "Failed to get CPU temperature. Continuing without dynamic throttling."
+            CURRENT_TEMP="N/A"
+            # If temp cannot be read, we cannot throttle, so just continue with current jobs
+            sleep "$MONITOR_INTERVAL_S"
+            continue
+        fi
+
+        local TARGET_JOBS=$BASE_JOBS # Assume base jobs initially
+
+        if [[ "$THROTTLING_ACTIVE" == "true" ]]; then
+            # We are currently throttling
+            if [[ $((CURRENT_TIME - THROTTLE_START_TIME)) -lt "$THROTTLE_COOLDOWN_DURATION" ]]; then
+                # Still in cooldown period, maintain throttle
+                TARGET_JOBS=$(( BASE_JOBS * THROTTLE_JOB_PERCENT / 100 ))
+                log_debug "Throttling active (cooldown). Temp: ${CURRENT_TEMP}°C, Next unthrottle in $((THROTTLE_COOLDOWN_DURATION - (CURRENT_TIME - THROTTLE_START_TIME)))s."
+            else
+                # Cooldown period passed, check if safe to unthrottle
+                if [[ "$CURRENT_TEMP" -lt "$TEMP_LOW_THRESHOLD_C" ]]; then
+                    THROTTLING_ACTIVE=false
+                    THROTTLE_START_TIME=0
+                    TARGET_JOBS=$BASE_JOBS # Unthrottle
+                    log_info "Temperature (${CURRENT_TEMP}°C) dropped below resume threshold (${TEMP_LOW_THRESHOLD_C}°C) after cooldown. Resuming full jobs ($BASE_JOBS)."
+                else
+                    # Temp still high, maintain throttle
+                    TARGET_JOBS=$(( BASE_JOBS * THROTTLE_JOB_PERCENT / 100 ))
+                    log_info "Temperature (${CURRENT_TEMP}°C) still high after cooldown. Maintaining throttle."
                 fi
             fi
-        done
-        
-        # Wait for build to finish and get exit code
-        wait $build_pid 2>/dev/null || true
-        echo "" # New line after progress
-        
-        if [[ -f "$BUILD_DIR/.build_exit_code" ]]; then
-            build_exit_code=$(cat "$BUILD_DIR/.build_exit_code")
-            rm -f "$BUILD_DIR/.build_exit_code"
         else
-            build_exit_code=$?
+            # Not currently throttling, check if throttling is needed
+            if [[ "$CURRENT_TEMP" != "N/A" && "$CURRENT_TEMP" -ge "$TEMP_HIGH_THRESHOLD_C" ]]; then
+                THROTTLING_ACTIVE=true
+                THROTTLE_START_TIME="$CURRENT_TIME"
+                TARGET_JOBS=$(( BASE_JOBS * THROTTLE_JOB_PERCENT / 100 ))
+                log_warning "Temperature (${CURRENT_TEMP}°C) exceeded HIGH threshold (${TEMP_HIGH_THRESHOLD_C}°C). Throttling jobs to $TARGET_JOBS (from $BASE_JOBS)."
+            fi
         fi
         
-        # Show final build status
-        if [[ -f "$build_log" ]]; then
-            # Extract build statistics
-            local errors
-            errors=$(grep -ci "error:" "$build_log" 2>/dev/null || echo "0")
-            local warnings
-            warnings=$(grep -ci "warning:" "$build_log" 2>/dev/null || echo "0")
+        # Ensure TARGET_JOBS is at least 1
+        if [[ "$TARGET_JOBS" -lt 1 ]]; then
+            TARGET_JOBS=1
+        fi
+
+        # Restart ninja if jobs count needs to change
+        if [[ "$TARGET_JOBS" -ne "$CURRENT_NINJA_JOBS" ]]; then
+            log_info "Jobs count changing from $CURRENT_NINJA_JOBS to $TARGET_JOBS. Restarting ninja."
+            kill "$CURRENT_NINJA_PID" 2>/dev/null || true # Kill current ninja if still running
+            wait "$CURRENT_NINJA_PID" 2>/dev/null || true # Wait for it to terminate
             
-            # Show final progress line
-            local final_progress
-            final_progress=$(grep -oE "\[[0-9]+/[0-9]+\]" "$build_log" | tail -n 1 || echo "")
-            if [[ -n "$final_progress" ]]; then
-                log_info "Final: $final_progress"
-            fi
-            
-            # Show errors/warnings summary
-            if [[ $errors -gt 0 ]]; then
-                log_warning "Build completed with $errors error(s) and $warnings warning(s)"
-                log_info "Showing first 5 errors:"
-                grep -i "error:" "$build_log" | head -n 5 | while IFS= read -r line; do
-                    log_error "  $line"
-                done
-            elif [[ $warnings -gt 0 ]]; then
-                log_warning "Build completed with $warnings warning(s) (errors: 0)"
+            ninja -C "$BUILD_DIR" -j"$TARGET_JOBS" 2>&1 | tee -a "$build_log" >&1 &
+            CURRENT_NINJA_PID=$!
+            CURRENT_NINJA_JOBS="$TARGET_JOBS"
+            log_debug "New ninja PID: $CURRENT_NINJA_PID"
+        fi
+
+        # Display status on a single line
+        local STATUS_STR="Temp: ${CURRENT_TEMP}°C, Jobs: ${CURRENT_NINJA_JOBS} (Base: $BASE_JOBS)"
+        if [[ "$THROTTLING_ACTIVE" == "true" ]]; then
+            local REM_COOLDOWN=$(( THROTTLE_COOLDOWN_DURATION - (CURRENT_TIME - THROTTLE_START_TIME) ))
+            if [[ "$REM_COOLDOWN" -gt 0 ]]; then
+                STATUS_STR+=" ${YELLOW}THROTTLED (cooldown: ${REM_COOLDOWN}s)${NC}"
             else
-                log_info "Build completed successfully (no errors, $warnings warnings)"
+                STATUS_STR+=" ${YELLOW}THROTTLED (temp high)${NC}"
             fi
+        else
+            STATUS_STR+=" ${GREEN}RUNNING FULL${NC}"
         fi
+
+        printf "\r%-80s" "$STATUS_STR" # Overwrite current line
         
-        # Append full build log
-        cat "$build_log" >> "$LOG_FILE"
+        sleep "$MONITOR_INTERVAL_S"
+    done
+    # --- End Main Build Monitoring Loop ---
+
+    # --- Final Cleanup and Status Check ---
+    echo "" # Newline after progress status
+
+    # Ensure no ninja process is left
+    if kill -0 "$CURRENT_NINJA_PID" &> /dev/null; then
+        log_warning "Ninja process $CURRENT_NINJA_PID was still running after loop, killing it."
+        kill "$CURRENT_NINJA_PID" 2>/dev/null || true
+        wait "$CURRENT_NINJA_PID" 2>/dev/null || true
     fi
-    
-    if [[ ${build_exit_code:-0} -ne 0 ]]; then
-        log_error "Build failed with exit code ${build_exit_code}"
-        log_error ""
-        log_error "Full build output saved to: $build_log"
-        log_error ""
-        log_error "Common build issues:"
-        log_error "  - Out of memory: Reduce --jobs (try --jobs 2)"
-        log_error "  - Disk space: Free up space (need ~20GB)"
-        log_error "  - Missing dependencies: Check CMake configuration output"
-        log_error "  - Compiler errors: Check $build_log for specific errors"
-        log_error ""
-        log_error "To retry with verbose output:"
-        log_error "  $0 --verbose --skip-build false"
-        log_error ""
-        log_error "Full installation log: $LOG_FILE"
-        exit 1
+
+    # Read the last exit code of ninja
+    # Since ninja was backgrounded, its exit code isn't directly available via $? in the main loop context
+    # We must have captured it when it finished or use a more robust way.
+    # For now, rely on build_log for success/failure
+    if grep -q "Build finished" "$build_log"; then # Simplified check, better to parse ninja's final exit
+        build_exit_code=0
+    else
+        log_warning "Build log did not indicate 'Build finished'. Checking for errors..."
+        if grep -q "error:" "$build_log"; then
+            build_exit_code=1
+        else
+            build_exit_code=0 # Assume success if no errors and no explicit finish message
+        fi
     fi
+    # --- End Final Cleanup and Status Check ---
     
     local end_time elapsed
     end_time=$(date +%s)
-    elapsed=$((end_time - start_time))
+    elapsed=$((end_time - start_total_time))
     
     log_success "Build complete in $((elapsed / 60))m $((elapsed % 60))s"
     log_debug "Build artifacts in: $BUILD_DIR"
@@ -843,7 +973,23 @@ build_dsllvm() {
     log_info ""
     log_info "Build state saved - you can resume by re-running this script"
     log_info "  or manually: ninja -C $BUILD_DIR -j$JOBS"
+
+    if [[ ${build_exit_code:-0} -ne 0 ]]; then
+        log_error "Build failed with exit code ${build_exit_code}"
+        log_error ""
+        log_error "Full build output saved to: $build_log"
+        log_error ""
+        log_error "Common build issues:"
+        log_error "  - Out of memory: Reduce --jobs (try --jobs 2)"
+        log_error "  - Disk space: Free up space (need ~20GB)"
+        log_error "  - Missing dependencies: Check CMake configuration output"
+        log_error "  - Compiler errors: Check $build_log for specific errors"
+        log_error ""
+        log_error "Full installation log: $LOG_FILE"
+        exit 1
+    fi
 }
+
 
 # Install DSLLVM
 install_dsllvm() {
@@ -1213,7 +1359,7 @@ error_handler() {
     log_error "  1. Check the log file: cat $LOG_FILE"
     log_error "  2. Re-run with verbose: $0 --verbose"
     log_error "  3. Check build directory: ls -la $BUILD_DIR"
-    exit $error_code
+    exit "$error_code"
 }
 
 # Set error trap

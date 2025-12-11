@@ -239,7 +239,7 @@ void DsmilNuclearSuretyPass::insert2PIWrapper(Function *F,
     // int dsmil_two_person_verify(const char *func_name,
     //                              const uint8_t *sig1, const uint8_t *sig2,
     //                              const char *key1, const char *key2)
-    auto *I8Ptr = PointerType::get(Type::getInt8Ty(Ctx), 0);
+    auto *I8Ptr = PointerType::getUnqual(Ctx);
     FunctionType *VerifyFT = FunctionType::get(
         Type::getInt32Ty(Ctx),
         {I8Ptr,   // func_name

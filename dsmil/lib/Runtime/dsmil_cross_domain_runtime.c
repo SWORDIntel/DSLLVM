@@ -20,6 +20,7 @@
  * SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -218,9 +219,21 @@ int dsmil_cross_domain_guard(const void *data,
         }
 
         // In production, this would trigger manual review workflow
-        // For now, log and allow
+        // Check if manual review is enabled
+        const char *auto_approve = getenv("DSMIL_CROSS_DOMAIN_AUTO_APPROVE");
+        if (!auto_approve || strcmp(auto_approve, "1") != 0) {
+            // Require manual review - block downgrade
+            fprintf(g_guard_ctx.audit_log,
+                    "[DOWNGRADE] BLOCKED - Manual review required for %s -> %s\n",
+                    classification_to_string(from), classification_to_string(to));
+            fflush(g_guard_ctx.audit_log);
+            return -1;  // Block downgrade
+        }
+        
+        // Auto-approve mode (testing only)
         fprintf(g_guard_ctx.audit_log,
-                "[DOWNGRADE] Manual review required (simulated approval)\n");
+                "[DOWNGRADE] Auto-approved (testing mode): %s -> %s\n",
+                classification_to_string(from), classification_to_string(to));
         fflush(g_guard_ctx.audit_log);
     }
 

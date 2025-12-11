@@ -79,7 +79,7 @@ private:
     Function* getCryptoBeginFunction() {
         FunctionType *FTy = FunctionType::get(
             Type::getVoidTy(M->getContext()),
-            {PointerType::get(Type::getInt8Ty(M->getContext()), 0)},  // op_name
+            {PointerType::getUnqual(M->getContext())},  // op_name
             false);
 
         Function *F = M->getFunction("dsssl_crypto_metric_begin");
@@ -97,7 +97,7 @@ private:
     Function* getCryptoEndFunction() {
         FunctionType *FTy = FunctionType::get(
             Type::getVoidTy(M->getContext()),
-            {PointerType::get(Type::getInt8Ty(M->getContext()), 0)},  // op_name
+            {PointerType::getUnqual(M->getContext())},  // op_name
             false);
 
         Function *F = M->getFunction("dsssl_crypto_metric_end");

@@ -17,6 +17,8 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/PassManager.h"
+#include "llvm/IR/DebugInfo.h"
+#include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
@@ -205,12 +207,12 @@ private:
     IRBuilder<> Builder(&Entry, Entry.getFirstInsertionPt());
 
     // Create call to dsmil_red_log(hook_name, function_name)
-    auto *I8Ptr = PointerType::get(Type::getInt8Ty(Ctx), 0);
+    auto *I8Ptr = PointerType::getUnqual(Ctx);
     FunctionCallee RedLogFunc = M->getOrInsertFunction(
         "dsmil_red_log", Type::getVoidTy(Ctx), I8Ptr, I8Ptr);
 
-    Value *HookNameStr = Builder.CreateGlobalStringPtr(HookName);
-    Value *FuncNameStr = Builder.CreateGlobalStringPtr(F.getName());
+    Value *HookNameStr = Builder.CreateGlobalString(HookName);
+    Value *FuncNameStr = Builder.CreateGlobalString(F.getName());
 
     Builder.CreateCall(RedLogFunc, {HookNameStr, FuncNameStr});
 
@@ -221,7 +223,24 @@ private:
     Hook.hook_name = HookName;
     Hook.function_name = F.getName().str();
     Hook.hook_type = "instrumentation";
-    Hook.line_number = 0;  // TODO: Get from debug info
+    
+    // Get line number from debug info
+    Hook.line_number = 0;
+    if (DISubprogram *SP = F.getSubprogram()) {
+        Hook.line_number = SP->getLine();
+    } else {
+        // Try to get from first instruction with debug info
+        for (auto &BB : F) {
+            for (auto &I : BB) {
+                if (DILocation *Loc = I.getDebugLoc()) {
+                    Hook.line_number = Loc->getLine();
+                    break;
+                }
+            }
+            if (Hook.line_number > 0) break;
+        }
+    }
+    
     RedHooks.push_back(Hook);
 
     return true;
@@ -236,7 +255,37 @@ private:
 
     AttackSurfaceInfo Info;
     Info.function_name = F.getName().str();
-    Info.location = ""; // TODO: Get from debug info
+    
+    // Get location from debug info
+    Info.location = "";
+    if (DISubprogram *SP = F.getSubprogram()) {
+        if (DIFile *File = SP->getFile()) {
+            Info.location = File->getFilename().str();
+            if (SP->getLine() > 0) {
+                Info.location += ":" + std::to_string(SP->getLine());
+            }
+        }
+    } else {
+        // Try to get from first instruction with debug info
+        for (auto &BB : F) {
+            for (auto &I : BB) {
+                if (DILocation *Loc = I.getDebugLoc()) {
+                    if (DILocalScope *Scope = Loc->getScope()) {
+                        if (DIFile *File = Scope->getFile()) {
+                            Info.location = File->getFilename().str();
+                            Info.location += ":" + std::to_string(Loc->getLine());
+                        }
+                    }
+                    break;
+                }
+            }
+            if (!Info.location.empty()) break;
+        }
+    }
+    
+    if (Info.location.empty()) {
+        Info.location = "unknown";
+    }
 
     getLayerDevice(F, Info.layer, Info.device);
 
@@ -272,11 +321,11 @@ private:
     IRBuilder<> Builder(&Entry, Entry.getFirstInsertionPt());
 
     // Create call to dsmil_red_scenario(vuln_type)
-    auto *I8Ptr = PointerType::get(Type::getInt8Ty(Ctx), 0);
+    auto *I8Ptr = PointerType::getUnqual(Ctx);
     FunctionCallee ScenarioFunc = M->getOrInsertFunction(
         "dsmil_red_scenario", Type::getInt1Ty(Ctx), I8Ptr);
 
-    Value *VulnTypeStr = Builder.CreateGlobalStringPtr(VulnType);
+    Value *VulnTypeStr = Builder.CreateGlobalString(VulnType);
     Value *ShouldInject = Builder.CreateCall(ScenarioFunc, {VulnTypeStr});
 
     // Create conditional instrumentation (simplified)

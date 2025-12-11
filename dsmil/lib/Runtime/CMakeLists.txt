@@ -40,6 +40,31 @@ target_include_directories(dsmilrt PUBLIC
   ${LLVM_MAIN_SRC_DIR}/../dsmil/include
 )
 
+# Find required crypto libraries
+find_package(PkgConfig REQUIRED)
+
+# OpenSSL/BoringSSL
+find_package(OpenSSL REQUIRED)
+target_link_libraries(dsmilrt PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+
+# TPM 2.0 TSS library
+pkg_check_modules(TSS2_SYS REQUIRED tss2-sys)
+pkg_check_modules(TSS2_TCTI_DEVICE REQUIRED tss2-tcti-device)
+pkg_check_modules(TSS2_TCTI_TABRMD QUIET tss2-tcti-tabrmd)
+
+target_include_directories(dsmilrt PUBLIC ${TSS2_SYS_INCLUDE_DIRS})
+target_link_libraries(dsmilrt PUBLIC ${TSS2_SYS_LIBRARIES} ${TSS2_TCTI_DEVICE_LIBRARIES})
+
+if(TSS2_TCTI_TABRMD_FOUND)
+    target_include_directories(dsmilrt PUBLIC ${TSS2_TCTI_TABRMD_INCLUDE_DIRS})
+    target_link_libraries(dsmilrt PUBLIC ${TSS2_TCTI_TABRMD_LIBRARIES})
+endif()
+
+# liboqs for quantum-safe cryptography
+pkg_check_modules(LIBOQS REQUIRED liboqs)
+target_include_directories(dsmilrt PUBLIC ${LIBOQS_INCLUDE_DIRS})
+target_link_libraries(dsmilrt PUBLIC ${LIBOQS_LIBRARIES})
+
 install(TARGETS dsmilrt
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

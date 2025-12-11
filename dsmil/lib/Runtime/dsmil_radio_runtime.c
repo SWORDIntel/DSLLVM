@@ -310,19 +310,38 @@ int dsmil_radio_bridge_send(const char *protocol, const uint8_t *data,
  * @return true if jamming detected, false otherwise
  */
 bool dsmil_radio_detect_jamming(dsmil_radio_protocol_t protocol) {
-    // Production would analyze signal strength, bit error rate, etc.
-    // For now: simulated (check environment variable)
-
+    // Check environment variable for testing/simulation
     const char *jam_env = getenv("DSMIL_RADIO_JAMMING");
     if (jam_env) {
         int jammed_proto = atoi(jam_env);
         if (jammed_proto == (int)protocol) {
             g_radio_ctx.jamming_detected[protocol]++;
             fprintf(g_radio_ctx.radio_log,
-                    "[RADIO_JAMMING] Protocol %d jammed!\n", protocol);
+                    "[RADIO_JAMMING] Protocol %d jammed! (simulated)\n", protocol);
             fflush(g_radio_ctx.radio_log);
             return true;
         }
+    }
+    
+    // Production: analyze signal strength, bit error rate, SNR degradation
+    // For now, check if protocol is available and monitor for anomalies
+    bool protocol_available = false;
+    switch (protocol) {
+        case DSMIL_RADIO_LINK16: protocol_available = g_radio_ctx.status.link16_available; break;
+        case DSMIL_RADIO_SATCOM: protocol_available = g_radio_ctx.status.satcom_available; break;
+        case DSMIL_RADIO_MUOS: protocol_available = g_radio_ctx.status.muos_available; break;
+        case DSMIL_RADIO_SINCGARS: protocol_available = g_radio_ctx.status.sincgars_available; break;
+        case DSMIL_RADIO_EPLRS: protocol_available = g_radio_ctx.status.eplrs_available; break;
+        default: protocol_available = false; break;
+    }
+
+    if (protocol_available) {
+        // In production, would analyze:
+        // - Signal strength drop > 10dB
+        // - Bit error rate > 1%
+        // - SNR degradation > 6dB
+        // - Carrier sense failures
+        // For now, return false (no jamming detected)
     }
 
     return false;
