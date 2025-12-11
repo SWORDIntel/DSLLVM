@@ -236,7 +236,8 @@ int dsmil_layer9_plan_campaign(const dsmil_layer9_executive_ctx_t *ctx,
     event.source_layer = LAYER9_ID;
     event.source_device = ctx->device_id;
     event.intel_type = DSMIL_INTEL_DOMAIN_ANALYTICS;
-    snprintf((char *)event.payload, sizeof(event.payload), "Campaign %s planned", campaign_id);
+    event.payload = NULL;
+    event.payload_size = 0;
     dsmil_intelligence_publish(&event);
     
     return 0;
@@ -393,7 +394,8 @@ int dsmil_layer9_assess_global_threats(const dsmil_layer9_executive_ctx_t *ctx,
     event.source_layer = LAYER9_ID;
     event.source_device = ctx->device_id;
     event.intel_type = DSMIL_INTEL_DOMAIN_ANALYTICS;
-    snprintf((char *)event.payload, sizeof(event.payload), "Global threat assessment completed");
+    event.payload = NULL;
+    event.payload_size = 0;
     dsmil_intelligence_publish(&event);
     
     return 0;

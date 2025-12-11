@@ -36,6 +36,14 @@
 /* liboqs for quantum-safe crypto */
 #include <oqs/oqs.h>
 
+/* Compatibility shims for older TSS header sets */
+#ifndef TPM2_ALG_SHAKE128
+#define TPM2_ALG_SHAKE128 TPM_ALG_SHAKE128
+#endif
+#ifndef TPM2_ALG_SHAKE256
+#define TPM2_ALG_SHAKE256 TPM_ALG_SHAKE256
+#endif
+
 #ifndef DSMIL_ENABLE_TPM
 #define DSMIL_ENABLE_TPM 1
 #endif
@@ -405,7 +413,7 @@ static TSS2_SYS_CONTEXT* get_tpm_context(void) {
 /**
  * @brief Release TPM context (called on shutdown)
  */
-static void release_tpm_context(TSS2_SYS_CONTEXT *sys_ctx) {
+static void __attribute__((unused)) release_tpm_context(TSS2_SYS_CONTEXT *sys_ctx) {
     cleanup_sys_context(sys_ctx, g_device255_state.tcti_context);
     g_device255_state.tpm_context = NULL;
     g_device255_state.tcti_context = NULL;
@@ -528,7 +536,7 @@ int dsmil_device255_hash(const dsmil_device255_ctx_t *ctx,
             memcpy(data.buffer, input, data.size);
 
             TPM2B_DIGEST digest = {0};
-            TSS2_RC rc = Tss2_Sys_Hash(sys_ctx, NULL, &data, spec.tpm_alg, TPM2_RH_NULL, &digest, NULL);
+            TSS2_RC rc = Tss2_Sys_Hash(sys_ctx, NULL, &data, spec.tpm_alg, TPM2_RH_NULL, &digest, NULL, NULL);
             if (rc == TSS2_RC_SUCCESS && digest.size >= required_len) {
                 memcpy(output, digest.buffer, required_len);
                 if (ctx->layer < 10) {
@@ -642,7 +650,7 @@ int dsmil_device255_encrypt(const dsmil_device255_ctx_t *ctx,
                 TPM2_HANDLE loaded_handle = 0;
                 TPM2B_PRIVATE in_private = out_private;
                 TPM2B_PUBLIC in_public_key = out_public;
-                rc = Tss2_Sys_Load(sys_ctx, TPM2_RH_NULL, NULL, &in_private, &in_public_key, &loaded_handle, NULL);
+                rc = Tss2_Sys_Load(sys_ctx, TPM2_RH_NULL, NULL, &in_private, &in_public_key, &loaded_handle, NULL, NULL);
                 if (rc == TSS2_RC_SUCCESS) {
                     TPM2B_MAX_BUFFER in_data = {0};
                     in_data.size = (uint16_t)(plaintext_len < sizeof(in_data.buffer) ? plaintext_len : sizeof(in_data.buffer));
@@ -655,9 +663,10 @@ int dsmil_device255_encrypt(const dsmil_device255_ctx_t *ctx,
                         memcpy(iv_in.buffer, iv, spec.iv_len);
                     }
 
+                    TPM2B_IV iv_out = {0};
                     rc = Tss2_Sys_EncryptDecrypt(sys_ctx, loaded_handle, NULL,
                                                  0, spec.tpm_mode, &iv_in,
-                                                 &in_data, &out_data, NULL);
+                                                 &in_data, &out_data, &iv_out, NULL);
                     if (rc == TSS2_RC_SUCCESS && out_data.size <= *ciphertext_len) {
                         memcpy(ciphertext, out_data.buffer, out_data.size);
                         *ciphertext_len = out_data.size;
@@ -815,7 +824,7 @@ int dsmil_device255_decrypt(const dsmil_device255_ctx_t *ctx,
                 TPM2_HANDLE loaded_handle = 0;
                 TPM2B_PRIVATE in_private = out_private;
                 TPM2B_PUBLIC in_public_key = out_public;
-                rc = Tss2_Sys_Load(sys_ctx, TPM2_RH_NULL, NULL, &in_private, &in_public_key, &loaded_handle, NULL);
+                rc = Tss2_Sys_Load(sys_ctx, TPM2_RH_NULL, NULL, &in_private, &in_public_key, &loaded_handle, NULL, NULL);
                 if (rc == TSS2_RC_SUCCESS) {
                     TPM2B_MAX_BUFFER in_data = {0};
                     in_data.size = (uint16_t)(data_len < sizeof(in_data.buffer) ? data_len : sizeof(in_data.buffer));
@@ -828,9 +837,10 @@ int dsmil_device255_decrypt(const dsmil_device255_ctx_t *ctx,
                         memcpy(iv_in.buffer, iv, spec.iv_len);
                     }
 
+                    TPM2B_IV iv_out = {0};
                     rc = Tss2_Sys_EncryptDecrypt(sys_ctx, loaded_handle, NULL,
                                                  1, spec.tpm_mode, &iv_in,
-                                                 &in_data, &out_data, NULL);
+                                                 &in_data, &out_data, &iv_out, NULL);
                     if (rc == TSS2_RC_SUCCESS && out_data.size <= *plaintext_len) {
                         memcpy(plaintext, out_data.buffer, out_data.size);
                         *plaintext_len = out_data.size;
@@ -850,7 +860,7 @@ int dsmil_device255_decrypt(const dsmil_device255_ctx_t *ctx,
     }
 
     const unsigned char *iv_bytes = (spec.iv_len > 0) ? (const unsigned char*)iv : NULL;
-    const unsigned char *tag_ptr = (spec.tag_len > 0) ? ((const unsigned char*)ciphertext + data_len) : NULL;
+    const unsigned char *tag_ptr_const = (spec.tag_len > 0) ? ((const unsigned char*)ciphertext + data_len) : NULL;
 
     EVP_CIPHER_CTX *cipher_ctx = EVP_CIPHER_CTX_new();
     if (!cipher_ctx) {
@@ -870,8 +880,15 @@ int dsmil_device255_decrypt(const dsmil_device255_ctx_t *ctx,
             if (EVP_DecryptInit_ex(cipher_ctx, spec.cipher, NULL, NULL, NULL) != 1) { rc = -1; break; }
             if (spec.iv_len && EVP_CIPHER_CTX_ctrl(cipher_ctx, iv_ctrl, (int)spec.iv_len, NULL) != 1) { rc = -1; break; }
             if (EVP_DecryptInit_ex(cipher_ctx, NULL, NULL, (const unsigned char*)key, iv_bytes) != 1) { rc = -1; break; }
-            if (spec.tag_len && tag_ptr &&
-                EVP_CIPHER_CTX_ctrl(cipher_ctx, tag_ctrl, (int)spec.tag_len, (void*)tag_ptr) != 1) { rc = -1; break; }
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+            if (spec.tag_len && tag_ptr_const &&
+                EVP_CIPHER_CTX_ctrl(cipher_ctx, tag_ctrl, (int)spec.tag_len, (void*)tag_ptr_const) != 1) { rc = -1; break; }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
             if (EVP_DecryptUpdate(cipher_ctx, (unsigned char*)plaintext, &len,
                                   (const unsigned char*)ciphertext, (int)data_len) != 1) { rc = -1; break; }
             plaintext_result = len;
@@ -883,8 +900,15 @@ int dsmil_device255_decrypt(const dsmil_device255_ctx_t *ctx,
         case CIPHER_MODE_CCM: {
             if (EVP_DecryptInit_ex(cipher_ctx, spec.cipher, NULL, NULL, NULL) != 1) { rc = -1; break; }
             if (spec.iv_len && EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_AEAD_SET_IVLEN, (int)spec.iv_len, NULL) != 1) { rc = -1; break; }
-            if (spec.tag_len && tag_ptr &&
-                EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_SET_TAG, (int)spec.tag_len, (void*)tag_ptr) != 1) { rc = -1; break; }
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+            if (spec.tag_len && tag_ptr_const &&
+                EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_SET_TAG, (int)spec.tag_len, (void*)tag_ptr_const) != 1) { rc = -1; break; }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
             if (EVP_DecryptInit_ex(cipher_ctx, NULL, NULL, (const unsigned char*)key, iv_bytes) != 1) { rc = -1; break; }
             if (EVP_DecryptUpdate(cipher_ctx, NULL, &len, NULL, (int)data_len) != 1) { rc = -1; break; }
             if (EVP_DecryptUpdate(cipher_ctx, (unsigned char*)plaintext, &len,
@@ -943,7 +967,7 @@ int dsmil_device255_sign(const dsmil_device255_ctx_t *ctx,
                 if (algorithm == TPM_ALG_RSA) {
                     in_public.publicArea.type = TPM2_ALG_RSA;
                     in_public.publicArea.nameAlg = TPM2_ALG_SHA256;
-                    in_public.publicArea.objectAttributes = TPMA_OBJECT_SIGN | TPMA_OBJECT_USERWITHAUTH;
+                    in_public.publicArea.objectAttributes = TPMA_OBJECT_SIGN_ENCRYPT | TPMA_OBJECT_USERWITHAUTH;
                     in_public.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_NULL;
                     in_public.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_RSASSA;
                     in_public.publicArea.parameters.rsaDetail.scheme.details.rsassa.hashAlg = TPM2_ALG_SHA256;
@@ -956,7 +980,7 @@ int dsmil_device255_sign(const dsmil_device255_ctx_t *ctx,
                 } else {
                     in_public.publicArea.type = TPM2_ALG_ECC;
                     in_public.publicArea.nameAlg = TPM2_ALG_SHA256;
-                    in_public.publicArea.objectAttributes = TPMA_OBJECT_SIGN | TPMA_OBJECT_USERWITHAUTH;
+                    in_public.publicArea.objectAttributes = TPMA_OBJECT_SIGN_ENCRYPT | TPMA_OBJECT_USERWITHAUTH;
                     in_public.publicArea.parameters.eccDetail.symmetric.algorithm = TPM2_ALG_NULL;
                     in_public.publicArea.parameters.eccDetail.scheme.scheme = TPM2_ALG_ECDSA;
                     in_public.publicArea.parameters.eccDetail.scheme.details.ecdsa.hashAlg = TPM2_ALG_SHA256;
@@ -981,7 +1005,7 @@ int dsmil_device255_sign(const dsmil_device255_ctx_t *ctx,
                     TPM2B_PRIVATE in_private = out_private;
                     TPM2B_PUBLIC in_public_key = out_public;
                     TPM2_HANDLE loaded_handle = 0;
-                    rc = Tss2_Sys_Load(sys_ctx, TPM2_RH_NULL, NULL, &in_private, &in_public_key, &loaded_handle, NULL);
+                    rc = Tss2_Sys_Load(sys_ctx, TPM2_RH_NULL, NULL, &in_private, &in_public_key, &loaded_handle, NULL, NULL);
                     
                     if (rc == TSS2_RC_SUCCESS) {
                         /* Hash the message first */
@@ -990,7 +1014,7 @@ int dsmil_device255_sign(const dsmil_device255_ctx_t *ctx,
                         memcpy(message_data.buffer, message, message_data.size);
                         
                         TPM2B_DIGEST digest = {0};
-                        rc = Tss2_Sys_Hash(sys_ctx, NULL, &message_data, TPM2_ALG_SHA256, TPM2_RH_NULL, &digest, NULL);
+                        rc = Tss2_Sys_Hash(sys_ctx, NULL, &message_data, TPM2_ALG_SHA256, TPM2_RH_NULL, &digest, NULL, NULL);
                         
                         if (rc == TSS2_RC_SUCCESS) {
                             /* Sign the digest */
@@ -1105,11 +1129,7 @@ int dsmil_device255_sign(const dsmil_device255_ctx_t *ctx,
         return -1;
     }
     
-    if (algorithm == TPM_ALG_RSA) {
-        pkey = d2i_PrivateKey_bio(bio, NULL);
-    } else if (algorithm == TPM_ALG_ECDSA) {
-        pkey = d2i_ECPrivateKey_bio(bio, NULL);
-    }
+    pkey = d2i_PrivateKey_bio(bio, NULL);
     
     BIO_free(bio);
     
@@ -1214,13 +1234,13 @@ int dsmil_device255_verify(const dsmil_device255_ctx_t *ctx,
                 memcpy(message_data.buffer, message, message_data.size);
                 
                 TPM2B_DIGEST digest = {0};
-                TSS2_RC rc = Tss2_Sys_Hash(sys_ctx, NULL, &message_data, TPM2_ALG_SHA256, TPM2_RH_NULL, &digest, NULL);
+                TSS2_RC rc = Tss2_Sys_Hash(sys_ctx, NULL, &message_data, TPM2_ALG_SHA256, TPM2_RH_NULL, &digest, NULL, NULL);
                 
                 if (rc == TSS2_RC_SUCCESS) {
                     /* Load public key */
                     TPM2B_PUBLIC in_public_key = in_public;
                     TPM2_HANDLE loaded_handle = 0;
-                    rc = Tss2_Sys_LoadExternal(sys_ctx, NULL, &in_public_key, TPM2_RH_NULL, &loaded_handle, NULL);
+                    rc = Tss2_Sys_LoadExternal(sys_ctx, NULL, NULL, &in_public_key, TPM2_RH_NULL, &loaded_handle, NULL, NULL);
                     
                     if (rc == TSS2_RC_SUCCESS) {
                         /* Build signature structure */
@@ -1314,11 +1334,7 @@ int dsmil_device255_verify(const dsmil_device255_ctx_t *ctx,
         return -1;
     }
     
-    if (algorithm == TPM_ALG_RSA) {
-        pkey = d2i_PUBKEY_bio(bio, NULL);
-    } else if (algorithm == TPM_ALG_ECDSA) {
-        pkey = d2i_EC_PUBKEY_bio(bio, NULL);
-    }
+    pkey = d2i_PUBKEY_bio(bio, NULL);
     
     BIO_free(bio);
     
@@ -1559,9 +1575,7 @@ bool dsmil_device255_pqc_available(const dsmil_device255_ctx_t *ctx,
         case TPM_ALG_ML_DSA_87:
         case CRYPTO_ALG_KYBER512:
         case CRYPTO_ALG_KYBER768:
-        case CRYPTO_ALG_KYBER1024:
         case CRYPTO_ALG_DILITHIUM2:
-        case CRYPTO_ALG_DILITHIUM3:
         case CRYPTO_ALG_DILITHIUM5:
         case CRYPTO_ALG_FALCON512:
         case CRYPTO_ALG_FALCON1024:

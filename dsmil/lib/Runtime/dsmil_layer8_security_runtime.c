@@ -1557,6 +1557,7 @@ int dsmil_layer8_extract_iocs(const void *threat_data, size_t data_size,
         // In production: dsmil_nlp_model_load_int8("ioc_extraction_nlp_int8.onnx", &nlp_model_handle);
         nlp_model_loaded = true;
     }
+    (void)nlp_model_handle;  // Placeholder until model wiring is enabled
     
     // Use NLP model for IOC extraction (INT8 quantized)
     // Model: Named Entity Recognition (NER) + Pattern Recognition
@@ -1771,6 +1772,7 @@ int dsmil_layer8_automated_response(const void *incident_data, size_t incident_s
         // In production: dsmil_model_load_int8("incident_classifier_int8.onnx", &incident_classifier_handle);
         incident_classifier_loaded = true;
     }
+    (void)incident_classifier_handle;  // Silence unused until model integration
     
     // Model: Text classification CNN + Attention
     // Architecture: Embedding → Conv1D → Attention → Dense → Softmax
@@ -1900,6 +1902,7 @@ int dsmil_layer8_automated_response(const void *incident_data, size_t incident_s
         // In production: dsmil_rl_model_load_int8("incident_response_rl_int8.onnx", &rl_model_handle);
         rl_model_loaded = true;
     }
+    (void)rl_model_handle;  // Silence unused until RL integration
     
     // RL Model: Deep Q-Network (DQN) for incident response
     // Architecture: State encoder → Q-network → Action selection
@@ -1982,6 +1985,7 @@ int dsmil_layer8_automated_response(const void *incident_data, size_t incident_s
     
     // Epsilon-greedy action selection (exploration vs exploitation)
     float epsilon = 0.1f;  // 10% exploration
+    (void)epsilon;  // Exploration placeholder (not yet used in heuristic)
     uint32_t selected_actions[20];
     uint32_t selected_count = 0;
     
