@@ -15,7 +15,9 @@
 #include <stdatomic.h>
 #include <time.h>
 #include <pthread.h>
+#ifdef HAVE_YAML_H
 #include <yaml.h>
+#endif
 
 #define DEFAULT_RING_BUFFER_SIZE 65536
 #define MAX_EVENT_SIZE 256
@@ -30,7 +32,7 @@ static _Atomic int telemetry_enabled = 0;
 // Thread-local context ID
 static __thread uint64_t thread_context_id = 0;
 
-// Budget configuration
+// Budget configuration placeholder (not yet implemented)
 typedef struct {
     char op_name[64];
     uint32_t max_branches;
@@ -38,9 +40,6 @@ typedef struct {
     uint32_t max_stores;
     uint64_t max_cycles;
 } crypto_budget_t;
-
-static crypto_budget_t *crypto_budgets = NULL;
-static size_t num_budgets = 0;
 
 /**
  * Get current timestamp in nanoseconds
@@ -113,11 +112,6 @@ void dsssl_fuzz_telemetry_shutdown(void) {
     if (ring_buffer) {
         free(ring_buffer);
         ring_buffer = NULL;
-    }
-    
-    if (crypto_budgets) {
-        free(crypto_budgets);
-        crypto_budgets = NULL;
     }
 }
 

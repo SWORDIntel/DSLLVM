@@ -189,9 +189,10 @@ static bool verify_mldsa87_signature(const uint8_t *message, size_t message_len,
     }
 
     // Perform ML-DSA-87 signature verification
+    size_t signature_len = sig->length_signature;
     OQS_STATUS status = OQS_SIG_verify(sig,
                                        message, message_len,
-                                       signature, MLDSA87_SIGNATURE_BYTES,
+                                       signature, signature_len,
                                        public_key);
 
     bool valid = (status == OQS_SUCCESS);
