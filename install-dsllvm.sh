@@ -11,10 +11,15 @@
 #   --build-dir PATH       Build directory (default: ./build)
 #   --build-type TYPE      CMake build type (Release/Debug/RelWithDebInfo/MinSizeRel)
 #   --jobs N               Number of parallel build jobs (default: auto-detect)
+#   --thermal-max TEMP     CPU temperature threshold to trigger throttling (default: 105°C)
+#   --thermal-critical TEMP CPU temperature for emergency shutdown (default: 110°C)
+#   --thermal-sensor PATH  Custom temperature sensor path (default: auto-detect)
+#   --gpu-throttle         Enable GPU temperature throttling (default: enabled)
+#   --no-gpu-throttle      Disable GPU temperature throttling
 #   --skip-build           Skip build step (assume build exists)
 #   --skip-install         Build only, do not install
-#   --resume                Resume from previous build (auto-detected if build exists)
-#   --clean                 Clean build directory before starting (removes cache)
+#   --resume               Resume from previous build (auto-detected if build exists)
+#   --clean                Clean build directory before starting (removes cache)
 #   --dry-run              Show what would be done without executing
 #   --verbose              Enable verbose output
 #   --help                 Show this help message
@@ -29,15 +34,18 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Default configuration
+# Default configuration (optimized for performance and thermal safety)
 PREFIX="/usr/local"
 BUILD_DIR="./build"
 BUILD_TYPE="Release"
 JOBS=""
-TEMP_HIGH_THRESHOLD_C=105 # Temperature to trigger throttling (Celsius)
-TEMP_LOW_THRESHOLD_C=90   # Temperature to allow resuming after cooldown (Celsius)
-THROTTLE_JOB_PERCENT=60   # Jobs percentage when throttling (e.g., 60 means 60% of base jobs)
-THROTTLE_COOLDOWN_DURATION=180 # Duration in seconds to maintain throttle after cooldown (Celsius)
+TEMP_HIGH_THRESHOLD_C=105    # Temperature to trigger throttling (Celsius)
+TEMP_LOW_THRESHOLD_C=90      # Temperature to allow resuming after cooldown (Celsius)
+TEMP_CRITICAL_C=110          # Emergency shutdown temperature
+THROTTLE_JOB_PERCENT=60      # Jobs percentage when throttling (e.g., 60 means 60% of base jobs)
+THROTTLE_COOLDOWN_DURATION=180 # Duration in seconds to maintain throttle after cooldown
+CUSTOM_SENSOR_PATH=""        # Auto-detect temperature sensor
+GPU_THROTTLE_ENABLED=true    # Enable GPU thermal throttling by default
 SKIP_BUILD=false
 SKIP_INSTALL=false
 RESUME=false
@@ -71,6 +79,27 @@ while [[ $# -gt 0 ]]; do
         --jobs)
             JOBS="$2"
             shift 2
+            ;;
+        --thermal-max=*)
+            TEMP_HIGH_THRESHOLD_C="${1#*=}"
+            shift
+            ;;
+        --thermal-critical=*)
+            # Set emergency shutdown threshold (5°C above throttle threshold)
+            TEMP_CRITICAL_C="${1#*=}"
+            shift
+            ;;
+        --thermal-sensor=*)
+            CUSTOM_SENSOR_PATH="${1#*=}"
+            shift
+            ;;
+        --gpu-throttle)
+            GPU_THROTTLE_ENABLED=true
+            shift
+            ;;
+        --no-gpu-throttle)
+            GPU_THROTTLE_ENABLED=false
+            shift
             ;;
         --skip-build)
             SKIP_BUILD=true
