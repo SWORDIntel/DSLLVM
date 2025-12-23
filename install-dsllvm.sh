@@ -24,6 +24,7 @@
 #   --skip-install         Build only, do not install
 #   --resume               Resume from previous build (auto-detected if build exists)
 #   --clean                Clean build directory before starting (removes cache)
+#   --cmake-extra-flags FLAGS Additional CMake flags for local system optimization
 #   --dry-run              Show what would be done without executing
 #   --verbose              Enable verbose output
 #   --help                 Show this help message
@@ -140,6 +141,10 @@ while [[ $# -gt 0 ]]; do
         --clean)
             CLEAN=true
             shift
+            ;;
+        --cmake-extra-flags)
+            CMAKE_EXTRA_FLAGS="$2"
+            shift 2
             ;;
         --dry-run)
             DRY_RUN=true
@@ -1069,8 +1074,19 @@ configure_build() {
         log_info "Running CMake configuration (this may take a few minutes)..."
     fi
     
+    # Add local system optimization flags if provided
+    if [[ -n "${CMAKE_EXTRA_FLAGS:-}" ]]; then
+        log_info "Adding local system optimization flags: $CMAKE_EXTRA_FLAGS"
+        # Parse CMAKE_EXTRA_FLAGS and add to cmake_args
+        # CMAKE_EXTRA_FLAGS should be space-separated cmake arguments
+        IFS=' ' read -ra extra_flags <<< "$CMAKE_EXTRA_FLAGS"
+        for flag in "${extra_flags[@]}"; do
+            cmake_args+=("$flag")
+        done
+    fi
+
     log_debug "CMake command: cmake ${cmake_args[*]}"
-    
+
     local cmake_log="$BUILD_DIR/cmake-config.log"
     local cmake_exit_code=0
     

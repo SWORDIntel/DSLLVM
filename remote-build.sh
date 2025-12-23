@@ -44,6 +44,116 @@ MONITOR_INTERVAL=30
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Detect local system architecture and generate build flags
+detect_local_system() {
+    # Detect architecture
+    local arch
+    case "$(uname -m)" in
+        x86_64)
+            arch="x86_64"
+            ;;
+        aarch64|arm64)
+            arch="aarch64"
+            ;;
+        armv7l|armv7)
+            arch="armv7"
+            ;;
+        riscv64)
+            arch="riscv64"
+            ;;
+        ppc64le)
+            arch="ppc64le"
+            ;;
+        s390x)
+            arch="s390x"
+            ;;
+        *)
+            arch="$(uname -m)"
+            ;;
+    esac
+
+    # Detect OS
+    local os
+    if [[ -f /etc/os-release ]]; then
+        os="$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"')"
+    else
+        os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+    fi
+
+    # Generate target triple
+    local triple="${arch}-pc-${os}"
+
+    # Generate CMake flags optimized for local system
+    local cmake_flags=""
+
+    # Architecture-specific optimizations
+    case "$arch" in
+        x86_64)
+            cmake_flags="$cmake_flags -DLLVM_TARGETS_TO_BUILD=X86"
+            cmake_flags="$cmake_flags -DLLVM_ENABLE_X86_TARGETS=ON"
+            cmake_flags="$cmake_flags -DCMAKE_CXX_FLAGS=-march=native"
+            cmake_flags="$cmake_flags -DCMAKE_C_FLAGS=-march=native"
+            ;;
+        aarch64)
+            cmake_flags="$cmake_flags -DLLVM_TARGETS_TO_BUILD=AArch64"
+            cmake_flags="$cmake_flags -DLLVM_ENABLE_AARCH64_TARGETS=ON"
+            cmake_flags="$cmake_flags -DCMAKE_CXX_FLAGS=-march=armv8-a"
+            cmake_flags="$cmake_flags -DCMAKE_C_FLAGS=-march=armv8-a"
+            ;;
+        armv7)
+            cmake_flags="$cmake_flags -DLLVM_TARGETS_TO_BUILD=ARM"
+            cmake_flags="$cmake_flags -DLLVM_ENABLE_ARM_TARGETS=ON"
+            cmake_flags="$cmake_flags -DCMAKE_CXX_FLAGS=-march=armv7-a"
+            cmake_flags="$cmake_flags -DCMAKE_C_FLAGS=-march=armv7-a"
+            ;;
+        riscv64)
+            cmake_flags="$cmake_flags -DLLVM_TARGETS_TO_BUILD=RISCV"
+            cmake_flags="$cmake_flags -DLLVM_ENABLE_RISCV_TARGETS=ON"
+            ;;
+        ppc64le)
+            cmake_flags="$cmake_flags -DLLVM_TARGETS_TO_BUILD=PowerPC"
+            cmake_flags="$cmake_flags -DLLVM_ENABLE_POWERPC_TARGETS=ON"
+            ;;
+        s390x)
+            cmake_flags="$cmake_flags -DLLVM_TARGETS_TO_BUILD=SystemZ"
+            cmake_flags="$cmake_flags -DLLVM_ENABLE_SYSTEMZ_TARGETS=ON"
+            ;;
+    esac
+
+    # OS-specific flags
+    case "$os" in
+        ubuntu|debian)
+            cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=/usr/local"
+            ;;
+        centos|rhel|fedora)
+            cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=/usr/local"
+            ;;
+        alpine)
+            cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=/usr/local"
+            ;;
+    esac
+
+    # Common optimization flags
+    cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=Release"
+    cmake_flags="$cmake_flags -DLLVM_ENABLE_ASSERTIONS=OFF"
+    cmake_flags="$cmake_flags -DLLVM_ENABLE_EXPENSIVE_CHECKS=OFF"
+    cmake_flags="$cmake_flags -DLLVM_ENABLE_BACKTRACES=OFF"
+    cmake_flags="$cmake_flags -DLLVM_INCLUDE_TESTS=OFF"
+    cmake_flags="$cmake_flags -DLLVM_INCLUDE_EXAMPLES=OFF"
+    cmake_flags="$cmake_flags -DLLVM_INCLUDE_BENCHMARKS=OFF"
+    cmake_flags="$cmake_flags -DLLVM_BUILD_DOCS=OFF"
+    cmake_flags="$cmake_flags -DLLVM_ENABLE_DOXYGEN=OFF"
+    cmake_flags="$cmake_flags -DLLVM_ENABLE_SPHINX=OFF"
+
+    # Detect CPU cores for parallel build
+    local cpu_cores
+    cpu_cores=$(nproc 2>/dev/null || echo "4")
+
+    echo "LOCAL_SYSTEM_INFO=\"$arch:$os:$triple\""
+    echo "CMAKE_FLAGS=\"$cmake_flags\""
+    echo "CPU_CORES=\"$cpu_cores\""
+}
+
 # Logging functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $*" >&2
@@ -308,8 +418,21 @@ get_remote_info() {
 start_remote_build() {
     log_info "Starting remote DSLLVM build..."
 
-    # Start build in background on remote host
-    local build_cmd="cd $REMOTE_BUILD_DIR/dsllvm-src && ./install-dsllvm.sh --prefix $REMOTE_BUILD_DIR/install --thermal-max 85 --thermal-critical 95 --clean --resume --skip-install"
+    # Detect local system for optimized build flags
+    log_info "Detecting local system architecture for optimized build..."
+    eval "$(detect_local_system)"
+
+    # Extract detected values
+    local_arch=$(echo "$LOCAL_SYSTEM_INFO" | cut -d: -f1)
+    local_os=$(echo "$LOCAL_SYSTEM_INFO" | cut -d: -f2)
+    local_triple=$(echo "$LOCAL_SYSTEM_INFO" | cut -d: -f3)
+
+    log_info "Local system detected: $local_arch on $local_os"
+    log_info "Target triple: $local_triple"
+    log_info "Using $CPU_CORES CPU cores for build"
+
+    # Create optimized build command with local system flags
+    local build_cmd="cd $REMOTE_BUILD_DIR/dsllvm-src && CPU_CORES=\"$CPU_CORES\" LOCAL_ARCH=\"$local_arch\" LOCAL_OS=\"$local_os\" TARGET_TRIPLE=\"$local_triple\" ./install-dsllvm.sh --prefix $REMOTE_BUILD_DIR/install --thermal-max 85 --thermal-critical 95 --clean --resume --skip-install --jobs $CPU_CORES --cmake-extra-flags \"$CMAKE_FLAGS\""
 
     # Execute build command in background
     remote_exec "nohup bash -c '$build_cmd > $REMOTE_BUILD_DIR/build.log 2>&1 &' && echo \$! > $REMOTE_BUILD_DIR/build.pid" || {
@@ -326,7 +449,9 @@ start_remote_build() {
         return 1
     }
 
-    log_success "Remote DSLLVM build started"
+    log_success "Remote DSLLVM build started (optimized for $local_arch $local_os)"
+    log_info "Build target triple: $local_triple"
+    log_info "Using $CPU_CORES parallel jobs with optimized flags"
 }
 
 # Function to monitor remote build
