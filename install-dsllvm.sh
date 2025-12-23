@@ -16,6 +16,10 @@
 #   --thermal-sensor PATH  Custom temperature sensor path (default: auto-detect)
 #   --gpu-throttle         Enable GPU temperature throttling (default: enabled)
 #   --no-gpu-throttle      Disable GPU temperature throttling
+#   --cpu-governor         Enable CPU governor management (default: enabled)
+#   --no-cpu-governor      Disable CPU governor management
+#   --gov-perf-temp TEMP   Temperature to switch to performance governor (default: 75°C)
+#   --gov-powersave-temp TEMP Temperature to switch to powersave governor (default: 85°C)
 #   --skip-build           Skip build step (assume build exists)
 #   --skip-install         Build only, do not install
 #   --resume               Resume from previous build (auto-detected if build exists)
@@ -46,6 +50,9 @@ THROTTLE_JOB_PERCENT=50      # Jobs percentage when throttling (e.g., 60 means 6
 THROTTLE_COOLDOWN_DURATION=600 # Duration in seconds to maintain throttle after cooldown
 CUSTOM_SENSOR_PATH=""        # Auto-detect temperature sensor
 GPU_THROTTLE_ENABLED=true    # Enable GPU thermal throttling by default
+CPU_GOVERNOR_ENABLED=true    # Enable CPU governor management (default: enabled)
+CPU_GOVERNOR_PERF_TEMP=75    # Temperature to switch to performance governor
+CPU_GOVERNOR_POWERSAVE_TEMP=85 # Temperature to switch to powersave governor
 SKIP_BUILD=false
 SKIP_INSTALL=false
 RESUME=false
@@ -100,6 +107,22 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-gpu-throttle)
             GPU_THROTTLE_ENABLED=false
+            shift
+            ;;
+        --cpu-governor)
+            CPU_GOVERNOR_ENABLED=true
+            shift
+            ;;
+        --no-cpu-governor)
+            CPU_GOVERNOR_ENABLED=false
+            shift
+            ;;
+        --gov-perf-temp=*)
+            CPU_GOVERNOR_PERF_TEMP="${1#*=}"
+            shift
+            ;;
+        --gov-powersave-temp=*)
+            CPU_GOVERNOR_POWERSAVE_TEMP="${1#*=}"
             shift
             ;;
         --skip-build)
@@ -358,6 +381,147 @@ get_cpu_temp() {
         log_warning "Could not determine valid CPU temperature from any sensor. Temperature monitoring disabled." >&2
         return 1
     fi
+}
+
+# Function to check if CPU governor management is supported
+check_cpu_governor_support() {
+    # Check if cpufreq subsystem is available
+    if [[ ! -d "/sys/devices/system/cpu/cpu0/cpufreq" ]]; then
+        log_debug "CPU frequency scaling not supported on this system"
+        return 1
+    fi
+
+    # Check if governor files exist and are writable
+    local governor_file="/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+    if [[ ! -w "$governor_file" ]]; then
+        log_debug "CPU governor control not available (insufficient permissions)"
+        return 1
+    fi
+
+    # Check available governors
+    local available_file="/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"
+    if [[ ! -f "$available_file" ]]; then
+        log_debug "Available governors information not found"
+        return 1
+    fi
+
+    local available_governors
+    available_governors=$(cat "$available_file" 2>/dev/null || echo "")
+    if [[ ! "$available_governors" =~ performance ]] || [[ ! "$available_governors" =~ powersave ]]; then
+        log_debug "Required governors (performance/powersave) not available"
+        return 1
+    fi
+
+    log_debug "CPU governor management supported"
+    return 0
+}
+
+# Function to get current CPU governor for a specific CPU
+get_cpu_governor() {
+    local cpu=${1:-0}
+    local governor_file="/sys/devices/system/cpu/cpu${cpu}/cpufreq/scaling_governor"
+    if [[ -f "$governor_file" ]]; then
+        cat "$governor_file" 2>/dev/null || echo "unknown"
+    else
+        echo "unknown"
+    fi
+}
+
+# Function to set CPU governor for all CPUs
+set_cpu_governor() {
+    local governor="$1"
+    local success_count=0
+    local total_count=0
+
+    # Get number of CPUs
+    local num_cpus
+    if command -v nproc &> /dev/null; then
+        num_cpus=$(nproc)
+    else
+        num_cpus=$(grep -c processor /proc/cpuinfo 2>/dev/null || echo "4")
+    fi
+
+    for ((cpu=0; cpu<num_cpus; cpu++)); do
+        local governor_file="/sys/devices/system/cpu/cpu${cpu}/cpufreq/scaling_governor"
+        if [[ -w "$governor_file" ]]; then
+            if echo "$governor" > "$governor_file" 2>/dev/null; then
+                ((success_count++))
+            fi
+        fi
+        ((total_count++))
+    done
+
+    if [[ $success_count -gt 0 ]]; then
+        log_debug "Set CPU governor to '$governor' on $success_count/$total_count CPUs"
+        return 0
+    else
+        log_warning "Failed to set CPU governor to '$governor' on any CPU"
+        return 1
+    fi
+}
+
+# Function to save current CPU governor settings
+save_cpu_governor_state() {
+    local state_file="$BUILD_DIR/.cpu_governor_state"
+    local num_cpus
+
+    if command -v nproc &> /dev/null; then
+        num_cpus=$(nproc)
+    else
+        num_cpus=$(grep -c processor /proc/cpuinfo 2>/dev/null || echo "4")
+    fi
+
+    echo "# Original CPU governor settings" > "$state_file"
+    echo "SAVE_TIME=$(date +%s)" >> "$state_file"
+
+    for ((cpu=0; cpu<num_cpus; cpu++)); do
+        local original_governor
+        original_governor=$(get_cpu_governor "$cpu")
+        echo "CPU${cpu}_GOVERNOR=$original_governor" >> "$state_file"
+    done
+
+    log_debug "Saved original CPU governor settings to $state_file"
+}
+
+# Function to restore original CPU governor settings
+restore_cpu_governor_state() {
+    local state_file="$BUILD_DIR/.cpu_governor_state"
+
+    if [[ ! -f "$state_file" ]]; then
+        log_debug "No CPU governor state file found, skipping restore"
+        return 0
+    fi
+
+    log_info "Restoring original CPU governor settings..."
+
+    local success_count=0
+    local total_count=0
+
+    while IFS='=' read -r key value; do
+        # Skip comments and metadata
+        [[ "$key" =~ ^# ]] && continue
+        [[ "$key" == "SAVE_TIME" ]] && continue
+
+        if [[ "$key" =~ CPU([0-9]+)_GOVERNOR ]]; then
+            local cpu="${BASH_REMATCH[1]}"
+            local governor_file="/sys/devices/system/cpu/cpu${cpu}/cpufreq/scaling_governor"
+
+            if [[ -w "$governor_file" ]] && [[ "$value" != "unknown" ]]; then
+                if echo "$value" > "$governor_file" 2>/dev/null; then
+                    ((success_count++))
+                fi
+            fi
+            ((total_count++))
+        fi
+    done < "$state_file"
+
+    if [[ $success_count -gt 0 ]]; then
+        log_success "Restored CPU governor on $success_count/$total_count CPUs"
+    else
+        log_warning "Failed to restore CPU governor on any CPU"
+    fi
+
+    rm -f "$state_file"
 }
 
 # Check if running as root for system installation
@@ -1225,6 +1389,7 @@ build_dsllvm() {
     log_info "Build state: $BUILD_DIR/.dsllvm_build_state (guaranteed resume)"
     log_info "Throttling Thresholds: HIGH=${TEMP_HIGH_THRESHOLD_C}°C, RESUME=${TEMP_LOW_THRESHOLD_C}°C"
     log_info "Throttling Jobs: ${THROTTLE_JOB_PERCENT}% of base jobs, Cooldown: ${THROTTLE_COOLDOWN_DURATION}s"
+    log_info "CPU Governor Management: $([[ "$CPU_GOVERNOR_ENABLED" == true ]] && echo "enabled (${CPU_GOVERNOR_PERF_TEMP}°C→performance, ${CPU_GOVERNOR_POWERSAVE_TEMP}°C→powersave)" || echo "disabled")"
     log_info "METEOR Optimizations: $([[ -n "$CFLAGS_METEOR" ]] && echo "enabled" || echo "disabled")"
     log_info "DSMIL APIs: All 20 passes + 25+ runtime libraries enabled"
 
@@ -1249,6 +1414,29 @@ build_dsllvm() {
     local LAST_SUCCESSFUL_TARGET=""
     local CHECKPOINT_INTERVAL=300 # Checkpoint every 5 minutes (300 seconds)
     local LAST_CHECKPOINT_TIME=0
+
+    # CPU Governor management variables
+    local CPU_GOVERNOR_CURRENT="performance" # Start with performance
+    local CPU_GOVERNOR_SAVED=false
+
+    # --- Initialize CPU Governor Management ---
+    if [[ "$CPU_GOVERNOR_ENABLED" == true ]]; then
+        if check_cpu_governor_support; then
+            log_info "CPU Governor Management: enabled (perf: ${CPU_GOVERNOR_PERF_TEMP}°C, powersave: ${CPU_GOVERNOR_POWERSAVE_TEMP}°C)"
+            save_cpu_governor_state
+            CPU_GOVERNOR_SAVED=true
+            # Start with performance governor for maximum build speed
+            if set_cpu_governor "performance"; then
+                CPU_GOVERNOR_CURRENT="performance"
+                log_debug "Set initial CPU governor to 'performance'"
+            fi
+        else
+            log_info "CPU Governor Management: not supported on this system"
+            CPU_GOVERNOR_ENABLED=false
+        fi
+    else
+        log_info "CPU Governor Management: disabled by user"
+    fi
 
     # --- Start initial ninja process ---
     log_info "Starting ninja build with $BASE_JOBS jobs."
@@ -1344,6 +1532,29 @@ EOF
             TARGET_JOBS=1
         fi
 
+        # --- CPU Governor Management ---
+        if [[ "$CPU_GOVERNOR_ENABLED" == true && "$CURRENT_TEMP" != "N/A" ]]; then
+            local desired_governor="performance"
+
+            # Switch to powersave if temperature is too high
+            if [[ "$CURRENT_TEMP" -ge "$CPU_GOVERNOR_POWERSAVE_TEMP" ]]; then
+                desired_governor="powersave"
+            # Switch to performance if temperature is low enough
+            elif [[ "$CURRENT_TEMP" -le "$CPU_GOVERNOR_PERF_TEMP" ]]; then
+                desired_governor="performance"
+            fi
+
+            # Only switch if we need to change governor
+            if [[ "$desired_governor" != "$CPU_GOVERNOR_CURRENT" ]]; then
+                if set_cpu_governor "$desired_governor"; then
+                    log_info "CPU governor switched from '$CPU_GOVERNOR_CURRENT' to '$desired_governor' (${CURRENT_TEMP}°C)"
+                    CPU_GOVERNOR_CURRENT="$desired_governor"
+                else
+                    log_warning "Failed to switch CPU governor to '$desired_governor'"
+                fi
+            fi
+        fi
+
         # Restart ninja if jobs count needs to change
         if [[ "$TARGET_JOBS" -ne "$CURRENT_NINJA_JOBS" ]]; then
             log_info "Jobs count changing from $CURRENT_NINJA_JOBS to $TARGET_JOBS. Restarting ninja."
@@ -1400,6 +1611,9 @@ EOF
 
         # Display status on a single line
         local STATUS_STR="Temp: ${CURRENT_TEMP}°C, Jobs: ${CURRENT_NINJA_JOBS} (Base: $BASE_JOBS)"
+        if [[ "$CPU_GOVERNOR_ENABLED" == true ]]; then
+            STATUS_STR+=", Governor: ${CPU_GOVERNOR_CURRENT}"
+        fi
         if [[ "$THROTTLING_ACTIVE" == "true" ]]; then
             local REM_COOLDOWN=$(( THROTTLE_COOLDOWN_DURATION - (CURRENT_TIME - THROTTLE_START_TIME) ))
             if [[ "$REM_COOLDOWN" -gt 0 ]]; then
@@ -1992,6 +2206,11 @@ cleanup_build_artifacts() {
     # Clean up temporary directories created by the script
     if [[ -d "/tmp/dsllvm-build-${SCRIPT_PID:-}" ]]; then
         rm -rf "/tmp/dsllvm-build-${SCRIPT_PID:-}" 2>/dev/null || true
+    fi
+
+    # Restore CPU governor settings if they were saved
+    if [[ "$CPU_GOVERNOR_ENABLED" == true && "$CPU_GOVERNOR_SAVED" == true ]]; then
+        restore_cpu_governor_state
     fi
 
     log_success "Cleanup completed:"
