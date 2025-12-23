@@ -19,7 +19,7 @@ endif()
 include(${LLVM_COMMON_CMAKE_UTILS}/Modules/LLVMVersion.cmake)
 
 # Include our custom FindZLIB.cmake to create ZLIB::ZLIB target
-include(${CMAKE_BINARY_DIR}/FindZLIB.cmake)
+include(${CMAKE_SOURCE_DIR}/../cmake/Modules/FindZLIB.cmake)
 
 set_directory_properties(PROPERTIES LLVM_VERSION_MAJOR "${LLVM_VERSION_MAJOR}")
 
