@@ -795,6 +795,18 @@ function(llvm_add_library name)
     # link step applied in LLVMBuildResolveComponentsLink uses the same
     # property as the target_link_libraries call below.
     set_property(TARGET ${name} PROPERTY LLVM_LIBTYPE ${libtype})
+
+    # For static component libraries, eagerly link the components to ensure
+    # symbols are resolved during archive creation.
+    if(ARG_STATIC)
+      llvm_map_components_to_libnames(eager_llvm_libs
+        ${ARG_LINK_COMPONENTS}
+        ${LLVM_LINK_COMPONENTS}
+      )
+      if(eager_llvm_libs)
+        target_link_libraries(${name} ${libtype} ${eager_llvm_libs})
+      endif()
+    endif()
   endif()
 
   target_link_libraries(${name} ${libtype}

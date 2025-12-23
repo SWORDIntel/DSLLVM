@@ -478,7 +478,7 @@ public:
       : Ctx(Ctx), Parent(Ctx->VarScope), Kind(Kind) {
     if (Parent)
       this->LocalsAlwaysEnabled = Parent->LocalsAlwaysEnabled;
-    Ctx->VarScope = this;
+    Ctx->VarScope = this; // NOLINT(dangling-pointer)
   }
 
   virtual ~VariableScope() { Ctx->VarScope = this->Parent; }

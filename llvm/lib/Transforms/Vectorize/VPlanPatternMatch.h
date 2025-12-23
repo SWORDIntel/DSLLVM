@@ -327,6 +327,7 @@ private:
   /// the provided index sequence.
   template <typename Fn, std::size_t... Is>
   bool all_of_tuple_elements(std::index_sequence<Is...>, Fn P) const {
+    (void)P; // Suppress unused parameter warning
     return (P(std::get<Is>(Ops), Is) && ...);
   }
 };

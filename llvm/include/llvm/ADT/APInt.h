@@ -189,7 +189,7 @@ public:
 
   /// Destructor.
   ~APInt() {
-    if (needsCleanup())
+    if (needsCleanup() && U.pVal != nullptr)
       delete[] U.pVal;
   }
 

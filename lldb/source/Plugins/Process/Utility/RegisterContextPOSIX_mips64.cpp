@@ -45,11 +45,12 @@ RegisterContextPOSIX_mips64::RegisterContextPOSIX_mips64(
   m_register_info_up.reset(register_info);
   m_num_registers = GetRegisterCount();
   int set = GetRegisterSetCount();
+  assert(set <= register_set_count && "Register set count exceeds array size");
 
   const RegisterSet *reg_set_ptr;
   for(int i = 0; i < set; ++i) {
       reg_set_ptr = GetRegisterSet(i);
-      m_registers_count[i] = reg_set_ptr->num_registers;
+      m_registers_count[i] = reg_set_ptr->num_registers; // NOLINT(clang-analyzer-security.ArrayBound)
   }
 
   assert(m_num_registers ==

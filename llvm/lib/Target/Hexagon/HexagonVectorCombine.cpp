@@ -12,6 +12,8 @@
 // HvxIdioms: recognize various opportunities to generate HVX intrinsic code.
 //===----------------------------------------------------------------------===//
 
+#pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"

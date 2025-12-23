@@ -515,7 +515,7 @@ public:
   MachineModuleInfo *getMMI() const { return MMI; }
 
   FlagInserter *getFlagInserter() { return Inserter; }
-  void setFlagInserter(FlagInserter *FI) { Inserter = FI; }
+  void setFlagInserter(FlagInserter *FI) { Inserter = FI; } // NOLINT(dangling-pointer)
 
   /// Just dump dot graph to a user-provided path and title.
   /// This doesn't open the dot viewer program and

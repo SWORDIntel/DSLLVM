@@ -135,9 +135,52 @@ def parse_args():
     
     return dsllvm_flags, clang_args, cpu_profile or DEFAULT_PROFILE, emit_ir, output_file
 
+def filter_gcc_flags(args):
+    """Filter out GCC-specific flags that clang doesn't understand"""
+    filtered_args = []
+    skip_next = False
+
+    gcc_incompatible_flags = {
+        '-mpreferred-stack-boundary=3',
+        '-mindirect-branch=thunk-extern',
+        '-mindirect-branch-register',
+        '-fno-allow-store-data-races',
+        '-fzero-init-padding-bits=all',
+        '-fmin-function-alignment=16',
+        '-fconserve-stack',
+        '-fsanitize=bounds-strict',
+        '-mrecord-mcount',
+        '-falign-jumps=1',
+        '-Wno-alloc-size-larger-than',
+        '-Wimplicit-fallthrough=5',
+        '-Wno-maybe-uninitialized'
+    }
+
+    for arg in args:
+        if skip_next:
+            skip_next = False
+            continue
+
+        # Skip GCC-specific flags
+        if arg in gcc_incompatible_flags:
+            print(f"DSLLVM: Filtering out GCC flag: {arg}", file=sys.stderr)
+            continue
+
+        # Handle flags with values
+        if arg.startswith('-fsanitize=') and 'bounds-strict' in arg:
+            print(f"DSLLVM: Filtering out GCC sanitize flag: {arg}", file=sys.stderr)
+            continue
+
+        filtered_args.append(arg)
+
+    return filtered_args
+
 def main():
     # Parse arguments
     dsllvm_flags, clang_args, cpu_profile, emit_ir, output_file = parse_args()
+
+    # Filter out GCC-incompatible flags
+    clang_args = filter_gcc_flags(clang_args)
     
     # Load CPU profile
     profile = load_cpu_profile(cpu_profile)

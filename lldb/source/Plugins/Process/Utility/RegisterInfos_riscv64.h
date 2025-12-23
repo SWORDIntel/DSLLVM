@@ -152,7 +152,7 @@ static lldb_private::RegisterInfo g_register_infos_riscv64_fpr[] = {
     DEFINE_FPR_ALT(fcsr, nullptr, 4, LLDB_INVALID_REGNUM),
 };
 
-static lldb_private::RegisterInfo g_register_infos_riscv64_vpr[] = {
+static lldb_private::RegisterInfo g_register_infos_riscv64_vpr[] = { // NOLINT(unused-variable)
     DEFINE_VPR(v0, LLDB_INVALID_REGNUM),  DEFINE_VPR(v1, LLDB_INVALID_REGNUM),
     DEFINE_VPR(v2, LLDB_INVALID_REGNUM),  DEFINE_VPR(v3, LLDB_INVALID_REGNUM),
     DEFINE_VPR(v4, LLDB_INVALID_REGNUM),  DEFINE_VPR(v5, LLDB_INVALID_REGNUM),

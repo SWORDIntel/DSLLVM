@@ -47,17 +47,23 @@ find_package(PkgConfig REQUIRED)
 find_package(OpenSSL REQUIRED)
 target_link_libraries(dsmilrt PUBLIC OpenSSL::SSL OpenSSL::Crypto)
 
-# TPM 2.0 TSS library
-pkg_check_modules(TSS2_SYS REQUIRED tss2-sys)
-pkg_check_modules(TSS2_TCTI_DEVICE REQUIRED tss2-tcti-device)
+# TPM 2.0 TSS library (optional - skip if not available)
+pkg_check_modules(TSS2_SYS QUIET tss2-sys)
+pkg_check_modules(TSS2_TCTI_DEVICE QUIET tss2-tcti-device)
 pkg_check_modules(TSS2_TCTI_TABRMD QUIET tss2-tcti-tabrmd)
 
-target_include_directories(dsmilrt PUBLIC ${TSS2_SYS_INCLUDE_DIRS})
-target_link_libraries(dsmilrt PUBLIC ${TSS2_SYS_LIBRARIES} ${TSS2_TCTI_DEVICE_LIBRARIES})
+if(TSS2_SYS_FOUND)
+    target_include_directories(dsmilrt PUBLIC ${TSS2_SYS_INCLUDE_DIRS})
+    target_link_libraries(dsmilrt PUBLIC ${TSS2_SYS_LIBRARIES} ${TSS2_TCTI_DEVICE_LIBRARIES})
 
-if(TSS2_TCTI_TABRMD_FOUND)
-    target_include_directories(dsmilrt PUBLIC ${TSS2_TCTI_TABRMD_INCLUDE_DIRS})
-    target_link_libraries(dsmilrt PUBLIC ${TSS2_TCTI_TABRMD_LIBRARIES})
+    if(TSS2_TCTI_TABRMD_FOUND)
+        target_include_directories(dsmilrt PUBLIC ${TSS2_TCTI_TABRMD_INCLUDE_DIRS})
+        target_link_libraries(dsmilrt PUBLIC ${TSS2_TCTI_TABRMD_LIBRARIES})
+    endif()
+
+    target_compile_definitions(dsmilrt PUBLIC -DDSMIL_TPM2_SUPPORT)
+else()
+    message(WARNING "TPM2 libraries not found - building without TPM2 support")
 endif()
 
 # liboqs for quantum-safe cryptography

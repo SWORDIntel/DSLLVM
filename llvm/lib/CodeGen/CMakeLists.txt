@@ -281,6 +281,7 @@ add_llvm_component_library(LLVMCodeGen
   CGData
   CodeGenTypes
   Core
+  GlobalISel # Added GlobalISel
   MC
   ObjCARC
   ProfileData

@@ -12241,7 +12241,7 @@ void SelectionDAG::ReplaceAllUsesWith(SDValue FromN, SDValue To) {
   // is replaced by To, we don't want to replace of all its users with To
   // too. See PR3018 for more info.
   SDNode::use_iterator UI = From->use_begin(), UE = From->use_end();
-  RAUWUpdateListener Listener(*this, UI, UE);
+  RAUWUpdateListener Listener(*this, UI, UE); // NOLINT(dangling-pointer)
   while (UI != UE) {
     SDNode *User = UI->getUser();
 
@@ -12299,7 +12299,7 @@ void SelectionDAG::ReplaceAllUsesWith(SDNode *From, SDNode *To) {
   // Iterate over just the existing users of From. See the comments in
   // the ReplaceAllUsesWith above.
   SDNode::use_iterator UI = From->use_begin(), UE = From->use_end();
-  RAUWUpdateListener Listener(*this, UI, UE);
+  RAUWUpdateListener Listener(*this, UI, UE); // NOLINT(dangling-pointer)
   while (UI != UE) {
     SDNode *User = UI->getUser();
 
@@ -12347,7 +12347,7 @@ void SelectionDAG::ReplaceAllUsesWith(SDNode *From, const SDValue *To) {
   // Iterate over just the existing users of From. See the comments in
   // the ReplaceAllUsesWith above.
   SDNode::use_iterator UI = From->use_begin(), UE = From->use_end();
-  RAUWUpdateListener Listener(*this, UI, UE);
+  RAUWUpdateListener Listener(*this, UI, UE); // NOLINT(dangling-pointer)
   while (UI != UE) {
     SDNode *User = UI->getUser();
 
@@ -12401,7 +12401,7 @@ void SelectionDAG::ReplaceAllUsesOfValueWith(SDValue From, SDValue To){
   // the ReplaceAllUsesWith above.
   SDNode::use_iterator UI = From.getNode()->use_begin(),
                        UE = From.getNode()->use_end();
-  RAUWUpdateListener Listener(*this, UI, UE);
+  RAUWUpdateListener Listener(*this, UI, UE); // NOLINT(dangling-pointer)
   while (UI != UE) {
     SDNode *User = UI->getUser();
     bool UserRemovedFromCSEMaps = false;
@@ -12585,7 +12585,7 @@ void SelectionDAG::ReplaceAllUsesOfValuesWith(const SDValue *From,
 
   // Sort the uses, so that all the uses from a given User are together.
   llvm::sort(Uses);
-  RAUOVWUpdateListener Listener(*this, Uses);
+  RAUOVWUpdateListener Listener(*this, Uses); // NOLINT(dangling-pointer)
 
   for (unsigned UseIndex = 0, UseIndexEnd = Uses.size();
        UseIndex != UseIndexEnd; ) {

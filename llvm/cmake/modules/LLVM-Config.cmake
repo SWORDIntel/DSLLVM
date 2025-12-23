@@ -245,6 +245,21 @@ function(llvm_map_components_to_libnames out_libs)
 
   # Translate symbolic component names to real libraries:
   llvm_expand_pseudo_components(link_components ${link_components})
+
+  # Manually map common abbreviated component names to their full library names
+  # to avoid incorrect -l flags when building static libraries.
+  list(FIND link_components "ObjCARC" objcarc_idx)
+  if(objcarc_idx GREATER -1)
+    list(REMOVE_AT link_components ${objcarc_idx})
+    list(APPEND link_components "ObjCARCOpts")
+  endif()
+
+  list(FIND link_components "Scalar" scalar_idx)
+  if(scalar_idx GREATER -1)
+    list(REMOVE_AT link_components ${scalar_idx})
+    list(APPEND link_components "ScalarOpts")
+  endif()
+
   foreach(c ${link_components})
     get_property(c_rename GLOBAL PROPERTY LLVM_COMPONENT_NAME_${c})
     if(c_rename)

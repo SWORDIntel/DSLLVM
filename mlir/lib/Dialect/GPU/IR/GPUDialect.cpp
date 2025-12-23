@@ -2518,6 +2518,9 @@ Speculation::Speculatability gpu::SubgroupBroadcastOp::getSpeculatability() {
   case BroadcastType::specific_lane:
     // Speculation should be safe as long as we inside structured control flow.
     return Speculation::Speculatable;
+  default:
+    // Unknown broadcast types are not speculatable by default
+    return Speculation::NotSpeculatable;
   }
 }
 
@@ -2533,6 +2536,8 @@ LogicalResult gpu::SubgroupBroadcastOp::verify() {
       return emitOpError()
              << "lane must be specified for `specific_lane` broadcast";
     return success();
+  default:
+    return emitOpError() << "unknown broadcast type";
   }
 }
 

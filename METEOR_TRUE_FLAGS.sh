@@ -1,100 +1,19 @@
 #!/bin/bash
 # ============================================================================
-# INTEL METEOR LAKE ULTIMATE COMPILER FLAGS REFERENCE - ENHANCED EDITION
-# Dell Latitude 5450 Covert Edition - Complete Optimization Guide
-# Version: ENHANCED v2.1 - December 2024
-# KYBERLOCK Research Division - Tactical Computing
-# Engineering Sample A00 | 9-Layer Flex Fabric | OpenVINO Integration
+# DSLLVM METEOR LAKE COMPILER FLAGS CONFIGURATION
+# Essential flags only - NOT a comprehensive reference
 # ============================================================================
 
-# ============================================================================
-# SYSTEM SPECIFICATIONS - DELL LATITUDE 5450 COVERT EDITION
-# ============================================================================
-# CPU: Intel(R) Core(TM) Ultra 7 165H (Engineering Sample A00)
-# Architecture: Meteor Lake (Family 6 Model 170 Stepping 4)
-# Cores: 16 (6P + 10E) - Hybrid Architecture
-# GPU: Intel Arc Graphics (Xe-LPG, 128 EUs)
-# NPU: VPU 3720 (2 Neural Compute Engines) - Base Layer
-# 
-# FLEX FABRIC ACCELERATOR STACK (9 Layers):
-#   Theoretical Combined: 1440 TOPS
-#   Interface: OpenVINO Unified Runtime
-#   Fallback: Graceful degradation through compute tiers
-#
-# CACHE HIERARCHY:
-#   L1 Data (P-core): 48KB per core
-#   L2 Cache (P-core): 2MB per core  
-#   L1 Data (E-core): 32KB per core
-#   L2 Cache (E-cluster): 4MB shared
-# ============================================================================
-
-# ============================================================================
-# ENHANCEMENT CHANGELOG v2.0
-# ============================================================================
-# NEW ISA Extensions Added:
-#   - AVX-IFMA (Integer Fused Multiply-Add)
-#   - AVX-NE-CONVERT (Neural Engine Convert)
-#   - AVX-VNNI-INT8 (8-bit VNNI)
-#   - CMPCCXADD (Compare and Conditional Add)
-#   - RAO-INT (Remote Atomic Operations)
-#   - PREFETCHI (Instruction Prefetch)
-#   - HRESET (History Reset)
-#   - Key Locker (KL/WIDEKL)
-#   - PKU (Protection Keys)
-#   - PTWRITE (Processor Trace)
-#   - RDPID (Read Processor ID)
-#   - PCONFIG (Platform Configuration)
-#   - ENQCMD (Enqueue Command)
-#   - AMX Support (Engineering Sample)
-#
-# NEW Optimizations Added:
-#   - Interprocedural Analysis (IPA) suite
-#   - Advanced scheduling optimizations
-#   - Cache-tuned parameters for Meteor Lake
-#   - Polly polyhedral optimizer (Clang)
-#   - Enhanced Rust target features
-#
-# Fixes:
-#   - Removed deprecated -mcpu (use -mtune)
-#   - Added missing ISA extensions
-# ============================================================================
-
-# ============================================================================
-# SECTION 1: BASE OPTIMIZATION FLAGS (ENHANCED)
-# ============================================================================
-
-# Maximum Performance Base - Enhanced with additional optimizations
-export CFLAGS_BASE="\
--O3 \
--pipe \
--fomit-frame-pointer \
--funroll-loops \
--fstrict-aliasing \
--fno-plt \
--fdata-sections \
--ffunction-sections \
--flto=auto \
--fuse-linker-plugin \
--fgraphite-identity \
--floop-nest-optimize \
--ftree-vectorize \
--ftree-slp-vectorize \
--fipa-pta \
--fipa-cp-clone \
--fdevirtualize-speculatively \
--fdevirtualize-at-ltrans \
--fipa-ra \
--fipa-sra \
--fipa-vrp"
-
-# Architecture Specific
-export ARCH_FLAGS="-march=meteorlake -mtune=meteorlake"
-
-# Alternative if meteorlake not recognized (GCC < 13)
-export ARCH_FLAGS_FALLBACK="-march=alderlake -mtune=alderlake"
-
-# Native detection fallback
+# Architecture flags for Meteor Lake (conservative for compatibility)
+export ARCH_FLAGS="-march=alderlake -mtune=alderlake"
 export ARCH_FLAGS_NATIVE="-march=native -mtune=native"
+
+# Base optimization flags
+export CFLAGS_BASE="-O3 -pipe -fomit-frame-pointer -funroll-loops -fstrict-aliasing -fno-plt -fdata-sections -ffunction-sections"
+
+# Essential security and optimization flags for DSLLVM compilation
+export CFLAGS_SECURITY="-D_FORTIFY_SOURCE=3 -fstack-protector-strong -fcf-protection=full -fpie -fPIC"
+export CXXFLAGS_SECURITY="$CFLAGS_SECURITY"
 
 # ============================================================================
 # SECTION 2: INSTRUCTION SET EXTENSIONS - COMPLETE & ENHANCED
@@ -264,8 +183,6 @@ export CFLAGS_OPTIMAL="\
 -mserialize \
 -mtsxldtrk \
 -muintr \
--mprefetchw \
--mprfchw \
 -mprefetchi \
 -mrdrnd \
 -mrdseed \
@@ -282,11 +199,7 @@ export CFLAGS_OPTIMAL="\
 -mpconfig \
 -menqcmd \
 -mcmpccxadd \
--mraoint \
--mshstk \
--mibt \
--minvpcid \
--mlahf-sa"
+-mraoint"
 
 # Engineering Sample with AMX
 export CFLAGS_OPTIMAL_AMX="$CFLAGS_OPTIMAL $ISA_AMX"
@@ -965,20 +878,23 @@ EOF
 # ACTIVATION
 # ============================================================================
 
-echo "╔══════════════════════════════════════════════════════════════════════════╗"
-echo "║  INTEL METEOR LAKE OPTIMIZATION FLAGS - ENHANCED v2.0                   ║"
-echo "║  CPU: Intel Core Ultra 7 165H | 6P+10E | Arc Graphics | NPU 3720        ║"
-echo "║  Engineering Sample A00 - Additional Features Enabled                   ║"
-echo "╚══════════════════════════════════════════════════════════════════════════╝"
-echo ""
-echo "NEW in v2.0:"
-echo "  • AVX-IFMA, AVX-NE-CONVERT, AVX-VNNI-INT8 for AI/ML acceleration"
-echo "  • CMPCCXADD, RAO-INT for advanced atomics"
-echo "  • Key Locker (KL/WIDEKL) for hardware-protected crypto"
-echo "  • AMX support (engineering sample): tile, int8, bf16, fp16, complex"
-echo "  • Clang Polly polyhedral optimizer integration"
-echo "  • Cache-tuned parameters for Meteor Lake hierarchy"
-echo "  • Enhanced IPA, scheduling, and loop optimizations"
-echo ""
-echo "Commands: show_flags | test_flags | test_isa | print_quick_ref"
-echo ""
+# Display message only when run directly, not when sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "╔══════════════════════════════════════════════════════════════════════════╗"
+    echo "║  INTEL METEOR LAKE OPTIMIZATION FLAGS - ENHANCED v2.0                   ║"
+    echo "║  CPU: Intel Core Ultra 7 165H | 6P+10E | Arc Graphics | NPU 3720        ║"
+    echo "║  Engineering Sample A00 - Additional Features Enabled                   ║"
+    echo "╚══════════════════════════════════════════════════════════════════════════╝"
+    echo ""
+    echo "NEW in v2.0:"
+    echo "  • AVX-IFMA, AVX-NE-CONVERT, AVX-VNNI-INT8 for AI/ML acceleration"
+    echo "  • CMPCCXADD, RAO-INT for advanced atomics"
+    echo "  • Key Locker (KL/WIDEKL) for hardware-protected crypto"
+    echo "  • AMX support (engineering sample): tile, int8, bf16, fp16, complex"
+    echo "  • Clang Polly polyhedral optimizer integration"
+    echo "  • Cache-tuned parameters for Meteor Lake hierarchy"
+    echo "  • Enhanced IPA, scheduling, and loop optimizations"
+    echo ""
+    echo "Commands: show_flags | test_flags | test_isa | print_quick_ref"
+    echo ""
+fi
