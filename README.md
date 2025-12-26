@@ -1,4 +1,4 @@
-# DSLLVM - Defense System LLVM Compiler
+# DSLLVM - DS LLVM Compiler
 
 **Version**: 1.6.0 (Phase 3: High-Assurance)
 **Repository**: https://github.com/SWORDIntel/DSLLVM
@@ -7,7 +7,6 @@
 ## 🚀 Quick Links
 
 - **[DSLLVM Build Guide](DSLLVM-BUILD-GUIDE.md)**: How to use DSLLVM as your default compiler
-- **[DSMIL Documentation](dsmil/README.md)**: DSMIL compiler features and usage
 - **[TPM2 Algorithms](tpm2_compat/README.md)**: 88 cryptographic algorithms reference
 ### Upstream LLVM
 - [Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html)
@@ -81,49 +80,31 @@ cmake --build build -j$(nproc)
 ```
 
 ---
-SLLVM is a **DSMIL-aware build of LLVM** with a small set of targeted extensions:
 
-- keeps the **standard LLVM/Clang toolchain behaviour**;
-- adds **optional hooks** for a multi-layer DSMIL system (devices, clearances, and telemetry);
-- exposes **AI and quantum-related metadata** to higher layers without changing normal compiler workflows.
+## What DSLLVM Is
 
-If you already know LLVM, you can treat DSLLVM as “LLVM with an opinionated integration layer” rather than a new compiler.
+DSLLVM is a **standard LLVM/Clang toolchain** with additional telemetry and metadata collection capabilities.
 
-> **Note**  
-> This repository is intentionally vague about downstream systems.  
+- Keeps the **standard LLVM/Clang toolchain behaviour**;
+- Adds **optional telemetry hooks** for build and compilation metrics;
+- Can be used as a regular `clang`/`lld` toolchain with enhanced observability.
+
+If you already know LLVM, you can treat DSLLVM as "LLVM with extra telemetry" rather than a new compiler.
 
 ---
 
 ## Highlights
 
-- ✅ **LLVM-first design**  
-  - Tracks upstream LLVM closely; core passes and IR semantics are unchanged.  
-  - Can be used as a regular `clang`/`lld` toolchain for non-DSMIL builds.
+- ✅ **LLVM-first design**
+  - Tracks upstream LLVM closely; core passes and IR semantics are unchanged.
+  - Can be used as a regular `clang`/`lld` toolchain.
 
-- 🛰️ **DSMIL integration points (optional)**  
-  - Lightweight annotations and metadata channels to describe:
-    - logical device / layer routing,
-    - clearance tags,
-    - build-time provenance and audit hints.  
-  - All of this is **opt-in** and encoded as normal IR / object metadata.
-
-- 🧠 **AI & telemetry hooks**  
-  - Build artefacts can carry compact feature metadata for:
+- 📊 **Telemetry and metadata collection**
+  - Build artefacts can carry compact telemetry metadata for:
     - performance/size profiles,
-    - security posture markers,
-    - deployment hints to external AI advisors.  
-  - No runtime is mandated; DSLLVM just **emits signals** higher layers may consume.
-
-- ⚛️ **Quantum-aware, not quantum-dependent**  
-  - Optional metadata path for handing small optimisation / search problems
-    to external **Qiskit-based workflows**.  
-  - From the compiler’s point of view, this is just structured metadata attached to IR.
-
-- 🔐 **PQC-aligned security profile**  
-  - Compiler options and metadata profiles intended to coexist with
-    **CNSA 2.0 style suites** (e.g. ML-KEM-1024, ML-DSA-87, SHA-384) without hard-coding any crypto.  
-  - DSLLVM does **not** ship cryptography; it exposes knobs and tags so
-    downstream toolchains can enforce their own policies.
+    - compilation metrics,
+    - build-time observability.
+  - Optional and encoded as normal IR / object metadata.
 
 ---
 
@@ -132,26 +113,14 @@ If you already know LLVM, you can treat DSLLVM as “LLVM with an opinionated in
 **Is:**
 
 - A **minimally invasive** extension layer on top of LLVM/Clang/LLD.
-- A way to **tag and describe** builds for a DSMIL-style multi-layer system.
-- A place to keep **AI / quantum / PQC-relevant metadata** close to the code that produced the binaries.
+- A way to **collect telemetry** during compilation.
+- A place to keep **build metrics and metadata** close to the code that produced the binaries.
 
 **Is *not*:**
 
-- Not a new IR or language.  
-- Not a replacement for upstream security guidance or crypto libraries.  
-- Not a mandatory runtime or kernel – it’s “just” the compiler side.
-
----
-
-## Quantum & AI Integration
-
-DSLLVM does **not** execute quantum workloads itself. Instead, it:
-
-- lets you attach **“quantum candidate”** hints to selected optimisation or search problems;
-- keeps those hints in IR / object metadata so an external Qiskit pipeline can pick them up;
-- allows AI advisors to see **compiler-level features** (size, structure, call-graphs, annotations) without changing the generated machine code.
-
-These features are entirely optional; standard builds can ignore them.
+- Not a new IR or language.
+- Not a replacement for upstream security guidance or crypto libraries.
+- Not a mandatory runtime or kernel – it's "just" the compiler side with telemetry.
 
 ---
 
@@ -172,16 +141,15 @@ If you don’t enable any DSMIL/AI options, DSLLVM behaves like a regular LLVM t
 ## Status
 
 - Core compiler functionality: ✅ usable
-- DSMIL / AI / quantum metadata hooks: 🧪 experimental, evolving
-- Downstream integrations (DSMIL runtime, advisory layers): out of scope for this repo
+- Telemetry and metadata collection: ✅ stable
+- Downstream integrations: out of scope for this repo
 
-For most users, DSLLVM can be dropped in as **“LLVM with extra metadata channels”** and left at that.
+For most users, DSLLVM can be dropped in as **"LLVM with extra telemetry"** and left at that.
 ## 📚 Documentation
 
+**Note:** DSMIL documentation is ignored in this repository and not included in builds.
 
 - **[DSLLVM-BUILD-GUIDE.md](DSLLVM-BUILD-GUIDE.md)**: Default compiler configuration
-- **[dsmil/docs/DSLLVM-DESIGN.md](dsmil/docs/DSLLVM-DESIGN.md)**: DSMIL design specification
-- **[dsmil/docs/MISSION-PROFILES-GUIDE.md](dsmil/docs/MISSION-PROFILES-GUIDE.md)**: Mission profiles
 - **[tpm2_compat/README.md](tpm2_compat/README.md)**: TPM2 algorithms reference
 
 

@@ -68,6 +68,18 @@ autoconf/autom4te.cache
 AGENTS.md
 .codex/
 
+# DSMIL documentation (ignored - DSLLVM is just a compiler with telemetry)
+/dsmil/docs/
+/dsmil/*.md
+/dsmil/DSMIL-GENERAL-FUZZING-FOUNDATION-COMPLETE.md
+/dsmil/DSMIL-GENERAL-FUZZING-SUMMARY.md
+/dsmil/DSSSL-ADVANCED-FUZZING-ENHANCEMENT-SUMMARY.md
+/dsmil/DSSSL-FUZZING-IMPLEMENTATION-SUMMARY.md
+/dsmil/OT-TELEMETRY-IMPLEMENTATION-SUMMARY.md
+/dsmil/README.md
+/dsmil/TELECOM-SS7-IMPLEMENTATION-SUMMARY.md
+/dsmil/TEST-COVERAGE-SUMMARY.md
+
 #==============================================================================#
 # Directories to ignore (do not add trailing '/'s, they skip symlinks).
 #==============================================================================#
